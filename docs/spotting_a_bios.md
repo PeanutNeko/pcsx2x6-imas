@@ -8,7 +8,7 @@ fortunately for you, the program automatically identifies the appropiate bios, a
 
 here you have an example
 
-![](/img/spotting_the_bios.png)
+![](./img/spotting_the_bios.png)
 
 you probably noticed it, but just to be sure:
 
