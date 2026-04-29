@@ -10,13 +10,27 @@ here's an example of how it should look like in the inside
 
 ```ini
 [game]
-name=SoulCalibur II (SC21 vA10 + DVD0D) # <-- game title for game list
-gameid=NM00007 # <-- game ID
+name=SoulCalibur II (SC21 vA10 + DVD0D)
+gameid=NM00007
 [data]
-elf=boot.elf # <-- elf filename to be executed at the same location than this file
-dongle=NM00007 SC21, Ver.A10 a025781148773a.bin # <-- security dongle filename to be mounted, same location than this file
-card=ConquestCard0.bin # <-- secondary memory card, only useful for SoulCalibur2
-mediasrc=dvd0.img # <-- filename of the media file
-media=DVD # <-- media type of the media file [CD/DVD/HDD]
+elf=boot.elf 
+dongle=NM00007 SC21, Ver.A10 a025781148773a.bin
+card=ConquestCard0.bin
+mediasrc=dvd0.img
+media=DVD
 ```
 
+## items Breakdown
+
+> mandatory entries will have their name in bold
+
+section | entry | value expected | description
+------- | ----- | -------------- | ------------
+game    | **name**  | string         | cosmetic game title for error messages or game list
+game    | **gameid**| string         | Sony official gameID, used for artwork and automatic patches if we ever need such thing
+data    | **elf**   | string         | elf filename to be executed _(must be at the same location than config file)_
+data    | **dongle**| string         | security dongle filename _(must be at the same location than config file)_
+data    | card  | string         | secondary memory card, only useful for SoulCalibur2 (and to trigger certain dev-enviroment behavior on certain games)
+data    | **mediasrc**| string       | filename of the media file _(must be at the same location than config file)_
+data    | **media** | string         | media type of the file from `mediasrc`, value must be `CD`, `DVD` or `HDD`
+data    | 256Region | string     | system256 region override, used by emulator to fake regional signature, saves you from the hassle of having several NVRAM files for the same bios
