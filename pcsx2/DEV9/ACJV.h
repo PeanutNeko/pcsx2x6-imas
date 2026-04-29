@@ -5,14 +5,16 @@
 #include "common/ARCADE.h"
 
 #define ACJV_BASE_ADDDR 0x12400000
-#define ACJV_RANGE 0x1240
+#define ACJV_RANGE      0x1240
 
-#define ACJV_CTR_START 0x12416002
+#define ACJV_CTR_START 0x12416002 // set to 0 when ACJV.IRX runs
 #define ACJV_CTR_STOP  0x12416000 // set to 0 during: JVFIRM upload begins, ACCORE starts, `acJvModuleStop()` is called
 
 #define ACJV_RDWR_SIZELIMIT 0x4000 // ACJV.IRX read/write functions only consider 14 bits from addr
 
 namespace ACJV {
+    extern bool enabled;
+
     u16 Read16(u32 addr);
     void Write16(u32 addr, u16 val);
     enum CMDS { //https://github.com/TheOnlyJoey/openjvs/wiki/Command-list

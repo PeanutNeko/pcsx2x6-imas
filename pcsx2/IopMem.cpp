@@ -360,16 +360,18 @@ void iopMemWrite16(u32 mem, u16 value)
     	Console.Error("%-16s %08X = %04X", "ACATA::write16", mem, value);
 		ACATA::write16(mem, value);
 	} else if (t == ACJV_RANGE) {
-		ACJV::Write16(mem, value);
-    	Console.Error("%-16s %08X = %04X", "ACJV::write16", mem, value);
+		if (ACJV::enabled) {
+			ACJV::Write16(mem, value);
+    		Console.Error("%-16s %08X = %04X", "ACJV::write16", mem, value);
+		}// else Console.Error("%-16s %08X = %04X", "ACJV::write16 [D]", mem, value);
 	} else if (t == ACRAM_RANGE) {
 		ACRAM::Write16(mem, value);
 	} else if (t == ACSRAM_RANGE) {
 		ACSRAM::Write16(mem, value);
 	} else if (t == 0x1241) {
 		switch (mem) {
-		case ACJV_CTR_START: Console.Warning("ACJV::START"); break;
-		case ACJV_CTR_STOP: Console.Warning("ACJV::STOP"); break;
+		case ACJV_CTR_START: Console.Warning("ACJV::START"); ACJV::enabled = true; break;
+		case ACJV_CTR_STOP:  Console.Warning("ACJV::STOP");  ACJV::enabled = false;  break;
 		case 0x1241510C:  Console.Warning("ACCORE::INTR  DISABLE_ACATA_INTR"); break;
 		case 0x1241511C:  Console.Warning("ACCORE::INTR  DISABLE_ACUART_INTR"); break;
 		// ACFPGA UPLOAD MMIO ///TODOx6: move this handling to ACFPGA.cpp
