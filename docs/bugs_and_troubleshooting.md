@@ -3,6 +3,7 @@
 You have an issue/bug with PCSX2x6?
 
 you may:
+
 - [open an issue ticket at github](https://github.com/PS2Homebrew-arcade/pcsx2x6/issues/new/choose)
 - Join the [PCSX2x6 discord server](https://discord.gg/7fBbpRZMm)
 
