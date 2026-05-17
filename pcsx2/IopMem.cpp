@@ -370,8 +370,7 @@ void iopMemWrite16(u32 mem, u16 value)
 		else
 			ACCORE::Write16(mem, value);
 	} else if ((t & 0xFF00) == 0x1300) {
-		if (mem == ACCORE_INTR_ATA)  Console.Warning("ACCORE:  ACATA_INTR_CLEAR: %04X", value);
-		if (mem == ACCORE_INTR_UART) Console.Warning("ACCORE: ACUART_INTR_CLEAR: %04X", value);
+		ACCORE::Interrupt(mem, value);
 	} else
 	{
 		u8* p = (u8 *)(psxMemWLUT[mem >> 16]);

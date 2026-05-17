@@ -1,15 +1,22 @@
+#include "DEV9.h"
+#include "IopDma.h"
 #include "ACCORE.h"
 #include "ACJV.h"
+#include "ACMACROS.h"
 #include "common/Console.h"
 
-#define ANS(addr, what) case addr: return what
+#define ANS(addr, what) case addr: Console.Error("%-16s %08X: %04X", __FUNCTION__, addr, what); return what
 
-u16 ACCORE::Read16(u32 addr) {
-    switch (addr) {
-    ANS(0x1241C000, 0); // ACRAM will wait 0xFFFFF times for this to not have 0x1000 bitmask set. also used inside intr_intr (interrup handler 13 declared on accore)
+u16 INTR_REG = 0;
+
+u16 ACCORE::Read16(u32 mem) {
+    switch (mem) {
+	case 0x1241C000:
+		// Console.Error("%-16s %08X: %04X", __FUNCTION__, mem, INTR_REG);
+    	return INTR_REG; // ACRAM will wait 0xFFFFF times for this to not have 0x1000 bitmask set. also used inside intr_intr (interrup handler 13 declared on accore)
     
     break;
-    default: Console.Error("%-16s %08X:  %04X", "ACUNK::Read16", addr, 0); return 0;
+    default: Console.Error("%-16s %08X:  %04X", "ACUNK::Read16", mem, 0); return 0;
     }
     return 0;
 }
@@ -37,4 +44,35 @@ void ACCORE::Write16(u32 mem, u16 value) {
 
 		default: Console.Error("%-16s %08X = %04X", "ACUNK::write16", mem, value); break;
 		}
+}
+
+void ACCORE::intr(int INTRN) {
+	switch (INTRN)
+	{
+	case INTRN_ATA:
+		INTR_REG |= CAUS_ATA;
+		break;
+	
+	default:
+		
+		return;
+	}
+	//dev9Irq(1);
+	//iopIntcIrq(13);
+}
+
+void ACCORE::Interrupt(u32 mem, u16 v) {
+	switch (mem)
+	{
+	case ACCORE_INTR_ATA:
+		Console.Warning("ACCORE:  ACATA_INTR_CLEAR: %04X", v);
+		CLRB(INTR_REG, CAUS_ATA);
+		break;
+	case ACCORE_INTR_UART:
+		Console.Warning("ACCORE: ACUART_INTR_CLEAR: %04X", v);
+		break;
+	default:
+		Console.Warning("ACCORE: unknown INTR write to: %08X", mem);
+		break;
+	}
 }
