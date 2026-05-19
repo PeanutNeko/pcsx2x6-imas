@@ -21,12 +21,7 @@
 
 namespace ACRAM
 {
-    u32 Read32(u32 addr);
     u16 Read16(u32 addr);
-    u8 Read8(u32 addr);
-
-    void Write8(u32 addr, u8 val);
     void Write16(u32 addr, u16 val);
-    void Write32(u32 addr, u32 val);
 }
 
