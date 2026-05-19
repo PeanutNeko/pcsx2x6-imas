@@ -108,7 +108,9 @@ int ACATA::TH::IO_OpenImage() {
 	return 0;
 }
 int ACATA::TH::IO_CloseImage() {
-	Console.WriteLn("%s", __FUNCTION__);
-	std::fclose(ACATA::TH::IMAGE);
-	return 0;
+	if (ACATA::TH::IMAGE) {
+		Console.WriteLn("%s", __FUNCTION__);
+		return std::fclose(ACATA::TH::IMAGE);
+	}
+	return EINVAL;
 }
