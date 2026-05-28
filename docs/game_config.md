@@ -28,9 +28,11 @@ section | entry | value expected | description
 ------- | ----- | -------------- | ------------
 game    | **name**  | string         | cosmetic game title for error messages or game list
 game    | **gameid**| string         | Sony official gameID, used for artwork and automatic patches if we ever need such thing
+data    | **platform** | string  | value must be `246` or `256`. this is used to indicate the emulator if the game is a SYSTEM256 specific game, and as such, the overclock emulation needs to be applied
 data    | **elf**   | string         | elf filename to be executed _(must be at the same location than config file)_
 data    | **dongle**| string         | security dongle filename _(must be at the same location than config file)_
-data    | card  | string         | secondary memory card, only useful for SoulCalibur2 (and to trigger certain dev-enviroment behavior on certain games)
+data    | card  | string         | secondary memory card, only useful for SoulCalibur2 Conquest mode (and maybe to trigger certain dev-enviroment behavior on some games)
 data    | **mediasrc**| string       | filename of the media file _(must be at the same location than config file)_
 data    | **media** | string         | media type of the file from `mediasrc`, value must be `CD`, `DVD` or `HDD`
 data    | 256Region | string     | system256 region override, used by emulator to fake regional signature, saves you from the hassle of having several NVRAM files for the same bios
+data    | sram  | string  | filename for the SRAM settings. if not found, defaults to `sram.bin`

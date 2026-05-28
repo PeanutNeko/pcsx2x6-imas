@@ -2,6 +2,8 @@
 > A PCSX2 fork for NAMCO SYSTEM246 and SYSTEM256 Games!
 
 
+Check the [compatibility tracker list here](https://github.com/PS2Homebrew-arcade/pcsx2x6/issues/9)
+
 !!! warning "WIP Project"
 
 	This project is on development, news and releases may appear at the bottom of this page when avaiable!
