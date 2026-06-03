@@ -8,6 +8,7 @@
 #include "common/FileSystem.h"
 
 #include "ACATA.h"
+#include "ACATA_IO_CHD.h"
 
 #if __POSIX__
 #define INVALID_HANDLE_VALUE -1
@@ -18,7 +19,8 @@
 std::mutex ACATA::TH::ioMutex;
 bool ACATA::TH::b_isIdle,
     ACATA::TH::ioWrite,
-    ACATA::TH::ioRead;
+    ACATA::TH::ioRead,
+    ACATA::TH::isCHD;
 std::condition_variable ACATA::TH::Idle_cv, ACATA::TH::ioReady;
 FILE* ACATA::TH::IMAGE;
 s64 ACATA::TH::IMAGESIZE;
@@ -28,69 +30,36 @@ u32 ACATA::TH::sectorsize = ACATAPI::CONSTANTS::DVD_SECTORSIZE; //TODO: remove h
 u32 ACATA::TH::nsector;
 s64 ACATA::TH::LBA;
 
-
-void ACATA::TH::IO_Thread() {
-	std::unique_lock ioWaitHandle(ioMutex);
-	b_isIdle = false;
-	ioWaitHandle.unlock();
-
-	while (true)
-	{
-		ioWaitHandle.lock();
-		b_isIdle = true;
-		Idle_cv.notify_all();
-
-        // AFAIK arcade games cannot write to their media storage in ANY way...
-		ioReady.wait(ioWaitHandle, [&] { return ioRead /*| ioWrite*/; });
-		b_isIdle = false;
-
-		int ioType = -1;
-		if (ioRead)
-			ioType = 0;
-		else if (ioWrite)
-			ioType = 1;
-
-		ioWaitHandle.unlock();
-
-		IO_Read();
-	}
-}
+ChdImage CHD;
 
 
 void ACATA::TH::IO_Read(u32* addr, u32 size) {
-	const s64 lba = ACATA::TH::LBA;
-	const u64 pos = lba * ACATA::TH::sectorsize;
+	const s64 lba = LBA;
+	const u64 pos = lba * sectorsize;
 	u64 size2 = sectorsize*nsector;
-	if (size != (size2)) Console.Error("ACATA::TH::IO_Read> mismatch on request and read...\n%ld vs %ld (sec:%d,lba:%d)",
+	if (size != (size2)) Console.Error("ACATA:IO_Read> mismatch on request and read...\n%ld vs %ld (sec:%d,lba:%d)",
 			 size, (size2), sectorsize, nsector);
-	//Console.WriteLn("%s: from %08X, len %08x", __FUNCTION__, pos, (size2));
-	if (FileSystem::FSeek64(IMAGE, pos, SEEK_SET) != 0) {
-		Console.ErrorFmt("ACATA:IO_Read: failed to seek pos:{}", pos);
-		pxAssert(false);
-		abort();
-	}
+	
+	if (isCHD) {
+		if (!CHD.ReadSectors(LBA, nsector, (void*)addr)) {
+			Console.ErrorFmt("ACATA:IO_ReadCHD: lba:{} nsector:{} failed", LBA, nsector);
+			pxAssert(false);
+			abort();
+		}
 
-	if (std::fread(addr, sectorsize, nsector, IMAGE) != static_cast<size_t>(nsector)) {
-		Console.ErrorFmt("ACATA:IO_Read: size:{} at:{} failed", size2, pos);
-		pxAssert(false);
-		abort();
-	}
-	{
-		std::lock_guard ioSignallock(ioMutex);
-		ioRead = false;
-	}
-}
+	} else {
+		//Console.WriteLn("%s: from %08X, len %08x", __FUNCTION__, pos, (size2));
+		if (FileSystem::FSeek64(IMAGE, pos, SEEK_SET) != 0) {
+			Console.ErrorFmt("ACATA:IO_Read: failed to seek pos:{}", pos);
+			pxAssert(false);
+			abort();
+		}
 
-void ACATA::TH::IO_Read() {
-	const s64 lba = ACATA::TH::LBA;
-	const u64 pos = lba * ACATA::TH::sectorsize;
-
-	if (FileSystem::FSeek64(IMAGE, pos, SEEK_SET) != 0 ||
-		std::fread(readBuffer, sectorsize, nsector, IMAGE) != static_cast<size_t>(nsector))
-	{
-		Console.Error("ACATA: File read error");
-		pxAssert(false);
-		abort();
+		if (std::fread(addr, sectorsize, nsector, IMAGE) != static_cast<size_t>(nsector)) {
+			Console.ErrorFmt("ACATA:IO_Read: size:{} at:{} failed", size2, pos);
+			pxAssert(false);
+			abort();
+		}
 	}
 	{
 		std::lock_guard ioSignallock(ioMutex);
@@ -99,44 +68,63 @@ void ACATA::TH::IO_Read() {
 }
 
 void ACATA::TH::IO_Write(u32* addr, u32 size) {
-	const s64 lba = ACATA::TH::LBA;
-	const u64 pos = lba * ACATA::TH::sectorsize;
-	u64 size2 = (u64)sectorsize * nsector;
-	if (size != size2)
-		Console.Error("ACATA::TH::IO_Write> mismatch %ld vs %ld", size, size2);
-	if (FileSystem::FSeek64(IMAGE, pos, SEEK_SET) != 0) {
-		Console.ErrorFmt("ACATA:IO_Write: failed to seek pos:{}", pos);
-		return;
-	}
-	if (std::fwrite(addr, sectorsize, nsector, IMAGE) != static_cast<size_t>(nsector)) {
-		Console.ErrorFmt("ACATA:IO_Write: size:{} at:{} failed", size2, pos);
-		return;
-	}
-	std::fflush(IMAGE);
+	if (!isCHD) {
+		const s64 lba = ACATA::TH::LBA;
+		const u64 pos = lba * ACATA::TH::sectorsize;
+		u64 size2 = (u64)sectorsize * nsector;
+		if (size != size2)
+			Console.Error("%s> mismatch %ld vs %ld", __FUNCTION__, size, size2);
+		if (FileSystem::FSeek64(IMAGE, pos, SEEK_SET) != 0) {
+			Console.ErrorFmt("ACATA:IO_Write: failed to seek pos:{}", pos);
+			return;
+		}
+		if (std::fwrite(addr, sectorsize, nsector, IMAGE) != static_cast<size_t>(nsector)) {
+			Console.ErrorFmt("ACATA:IO_Write: size:{} at:{} failed", size2, pos);
+			return;
+		}
+		std::fflush(IMAGE);
+	} else Console.ErrorFmt("{}: skipping write due to CHD media", __FUNCTION__, size);
 }
 
 int ACATA::TH::IO_OpenImage() {
-    ACATA::TH::IMAGE = std::fopen(ACATA::imgpath.c_str(), "r+b");
+	isCHD = ChdImage::IsChdFileName(ACATA::imgpath);
+	if (isCHD) {
+		if (CHD.Open(ACATA::imgpath)) {
+			u32 secsize = CHD.GetSectorSize();
+			if (secsize != sectorsize) 
+				Console.ErrorFmt("ACATA: CHD sectorsize mismatches declaration {} vs {}", secsize, sectorsize);
+			sectorsize = secsize;
+			ACATA::TH::IMAGESIZE = (CHD.GetSectorCount() * sectorsize);
+		} else return EIO;
+		Console.WriteLn("%s: CHD image opened ok", __FUNCTION__);
+	} else {
+    	ACATA::TH::IMAGE = std::fopen(ACATA::imgpath.c_str(), "r+b");
 
-	if (!ACATA::TH::IMAGE)
-		ACATA::TH::IMAGE = std::fopen(ACATA::imgpath.c_str(), "rb");
+		if (!ACATA::TH::IMAGE)
+			ACATA::TH::IMAGE = std::fopen(ACATA::imgpath.c_str(), "rb");
 
-	if (!ACATA::TH::IMAGE) {
-		Console.ErrorFmt("{}> fail to fopen '{}' w/ error {} '{}'", __FUNCTION__, ACATA::imgpath, errno, strerror(errno));
-		return errno;
+		if (!ACATA::TH::IMAGE) {
+			Console.ErrorFmt("{}> fail to fopen '{}' w/ error {} '{}'", __FUNCTION__, ACATA::imgpath, errno, strerror(errno));
+			return errno;
+		}
+		s64 t;
+		if ((t = FileSystem::GetPathFileSize(ACATA::imgpath.c_str())) > 0)
+			ACATA::TH::IMAGESIZE = t;
+		else {
+			Console.ErrorFmt("{}> fail to get filesize: {}", __FUNCTION__, t);
+			return EINVAL;
+		}
+		Console.WriteLn("%s: image opened ok", __FUNCTION__);
 	}
-	s64 t;
-	if ((t = FileSystem::GetPathFileSize(ACATA::imgpath.c_str())) > 0)
-		ACATA::TH::IMAGESIZE = t;
-	else {
-		Console.ErrorFmt("{}> fail to get filesize: {}", __FUNCTION__, t);
-		return EINVAL;
-	}
-	Console.WriteLn("%s: image opened ok", __FUNCTION__);
 	return 0;
 }
+
 int ACATA::TH::IO_CloseImage() {
-	if (ACATA::TH::IMAGE) {
+	if (isCHD) {
+		Console.WriteLn("%s CHD", __FUNCTION__);
+		CHD.Close();
+		return 0;
+	} else if (ACATA::TH::IMAGE) {
 		Console.WriteLn("%s", __FUNCTION__);
 		return std::fclose(ACATA::TH::IMAGE);
 	}

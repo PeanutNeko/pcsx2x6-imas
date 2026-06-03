@@ -77,7 +77,8 @@ namespace ACATA
 	    extern std::mutex ioMutex;
         extern bool b_isIdle,
             ioWrite,
-            ioRead;
+            ioRead,
+            isCHD;
 	    extern std::condition_variable Idle_cv, ioReady;
         extern FILE* IMAGE;
         extern s64 IMAGESIZE;
@@ -86,9 +87,7 @@ namespace ACATA
         extern u32 sectorsize; //512 for hdd and 2048 for Disc (?) check it
         extern u32 nsector;
         extern s64 LBA;
-        
-        void IO_Thread();
-        void IO_Read();
+
         void IO_Read(u32* addr, u32 val); //alternate version to vomit data straight away to a ptr
         void IO_Write(u32* addr, u32 size);
         int IO_OpenImage();

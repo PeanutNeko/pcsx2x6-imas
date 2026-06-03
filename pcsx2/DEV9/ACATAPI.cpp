@@ -110,7 +110,7 @@ void ACATAPI::handle_cmd(atapi_packet_t P) {
         break;
 
     case ATAPICMD::READ_CAPACITY: {
-        if (ACATA::TH::IMAGE && ACATA::TH::IMAGESIZE > 0) {
+        if ((ACATA::TH::IMAGE || ACATA::TH::isCHD) && ACATA::TH::IMAGESIZE > 0) {
             u32 last_lba = (u32)(ACATA::TH::IMAGESIZE / ACATAPI::CONSTANTS::DVD_SECTORSIZE) - 1;
             u32 block_len = ACATAPI::CONSTANTS::DVD_SECTORSIZE;
             atapi_pio_buf[0] = (last_lba >> 24) & 0xFF;
@@ -165,7 +165,7 @@ void ACATAPI::handle_cmd(atapi_packet_t P) {
 
     case ATAPICMD::READ_10: {
         //Console.Warning("ACATAPI:READ_10: tlen:%X, lba:%X", P.pkt.transf_len, transf_lba);
-        if (!ACATA::TH::IMAGE || nsec == 0) {
+        if ((!ACATA::TH::IMAGE && !ACATA::TH::isCHD) || nsec == 0) {
             Console.Error("ACATAPI:READ_10: no image or zero sectors");
             ACATA::R_STATUS |= ATA_STAT_ERR;
             ACATA::R_ERROR = ATA_ERR_ABORT;

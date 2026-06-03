@@ -40,7 +40,6 @@ int ACSRAM::ReadFile() {
 }
 
 int ACSRAM::WriteFile() {
-	Console.WriteLn("%s", __FUNCTION__);
     if (LockSave) {
         Console.Warning("ACSRAM: skipping sram save to preserve existing image");
         return 0;
