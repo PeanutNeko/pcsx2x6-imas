@@ -1,6 +1,7 @@
 #include "ACCORE.h"
 #include "ACATAPI.h"
 #include "ACATA.h"
+#include "ACATA_IO_CHD.h"
 #include "common/Console.h"
 #include "common/FileSystem.h"
 
@@ -190,13 +191,19 @@ void ACATAPI::handle_cmd(atapi_packet_t P) {
                 atapi_complete_nodata();
                 break;
             }
-            s64 offset = (s64)transf_lba * ACATAPI::CONSTANTS::DVD_SECTORSIZE;
-            FileSystem::FSeek64(ACATA::TH::IMAGE, offset, SEEK_SET);
-            size_t rd = fread(atapi_pio_buf, 1, total, ACATA::TH::IMAGE);
-            if (rd == total) {
+            bool ok = false;
+            if (ACATA::TH::isCHD) {
+                u32 scale = ACATAPI::CONSTANTS::DVD_SECTORSIZE / CHD.GetSectorSize();
+                ok = CHD.ReadSectors((u64)transf_lba * scale, nsec * scale, atapi_pio_buf);
+            } else {
+                s64 offset = (s64)transf_lba * ACATAPI::CONSTANTS::DVD_SECTORSIZE;
+                FileSystem::FSeek64(ACATA::TH::IMAGE, offset, SEEK_SET);
+                ok = (fread(atapi_pio_buf, 1, total, ACATA::TH::IMAGE) == total);
+            }
+            if (ok) {
                 atapi_pio_setup(total);
             } else {
-                Console.Error("ACATAPI:READ_10: short read (%zu/%u)", rd, total);
+                Console.Error("ACATAPI:READ_10: read failed at lba %u, %u sectors", transf_lba, nsec);
                 ACATA::R_STATUS |= ATA_STAT_ERR;
                 ACATA::R_ERROR = ATA_ERR_ABORT;
                 atapi_complete_nodata();

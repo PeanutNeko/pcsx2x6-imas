@@ -51,3 +51,5 @@ private:
 
     u32 m_cachedHunk = UINT32_MAX;
 };
+
+extern ChdImage CHD;

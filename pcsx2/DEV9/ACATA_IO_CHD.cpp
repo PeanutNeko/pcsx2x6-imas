@@ -154,5 +154,5 @@ bool ChdImage::ReadSectors(u64 lba,
 
 bool ChdImage::IsChdFileName(const std::string& path)
 {
-	return StringUtil::EndsWithNoCase(Path::GetExtension(path), "chd");
+	return StringUtil::compareNoCase(Path::GetExtension(path), "chd");
 }

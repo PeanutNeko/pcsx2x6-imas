@@ -24,8 +24,6 @@ bool ACATA::TH::b_isIdle,
 std::condition_variable ACATA::TH::Idle_cv, ACATA::TH::ioReady;
 FILE* ACATA::TH::IMAGE;
 s64 ACATA::TH::IMAGESIZE;
-int ACATA::TH::readBufferLen;
-u8* ACATA::TH::readBuffer = nullptr;
 u32 ACATA::TH::sectorsize = ACATAPI::CONSTANTS::DVD_SECTORSIZE; //TODO: remove hardcode before testing HDD/CD games !
 u32 ACATA::TH::nsector;
 s64 ACATA::TH::LBA;
@@ -41,8 +39,11 @@ void ACATA::TH::IO_Read(u32* addr, u32 size) {
 			 size, (size2), sectorsize, nsector);
 	
 	if (isCHD) {
-		if (!CHD.ReadSectors(LBA, nsector, (void*)addr)) {
-			Console.ErrorFmt("ACATA:IO_ReadCHD: lba:{} nsector:{} failed", LBA, nsector);
+		u32 scale = sectorsize / CHD.GetSectorSize();
+		u64 chd_lba = LBA * scale;
+		u32 chd_count = nsector * scale;
+		if (!CHD.ReadSectors(chd_lba, chd_count, (void*)addr)) {
+			Console.ErrorFmt("ACATA:IO_ReadCHD: lba:{} nsector:{} failed", chd_lba, chd_count);
 			pxAssert(false);
 			abort();
 		}
@@ -83,7 +84,7 @@ void ACATA::TH::IO_Write(u32* addr, u32 size) {
 			return;
 		}
 		std::fflush(IMAGE);
-	} else Console.ErrorFmt("{}: skipping write due to CHD media", __FUNCTION__, size);
+	} else Console.ErrorFmt("{}: skipping write due to CHD media", __FUNCTION__);
 }
 
 int ACATA::TH::IO_OpenImage() {
@@ -123,6 +124,7 @@ int ACATA::TH::IO_CloseImage() {
 	if (isCHD) {
 		Console.WriteLn("%s CHD", __FUNCTION__);
 		CHD.Close();
+		isCHD = false;
 		return 0;
 	} else if (ACATA::TH::IMAGE) {
 		Console.WriteLn("%s", __FUNCTION__);

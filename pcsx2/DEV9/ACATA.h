@@ -82,8 +82,6 @@ namespace ACATA
 	    extern std::condition_variable Idle_cv, ioReady;
         extern FILE* IMAGE;
         extern s64 IMAGESIZE;
-	    extern int readBufferLen;
-	    extern u8* readBuffer;
         extern u32 sectorsize; //512 for hdd and 2048 for Disc (?) check it
         extern u32 nsector;
         extern s64 LBA;

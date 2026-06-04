@@ -408,10 +408,6 @@ void ACATA::handle_cmd(u16 val) {
     }
 }
 
-void ACATA_SETUP() {
-    ACATA::TH::readBuffer = new u8[ACATA::TH::readBufferLen];
-}
-
 #include "common/Path.h"
 
 void ACATA::SetImgPath(const char* S) {
