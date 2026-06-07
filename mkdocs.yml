@@ -3,6 +3,7 @@ site_url: https://PS2Homebrew-arcade.github.io/PCSX2x6/
 theme:
   features:
     - navigation.footer
+    - navigation.instant.preview
     - content.tooltips
   name: material
   palette:
