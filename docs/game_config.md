@@ -29,7 +29,7 @@ section | entry | value expected | description
 ------- | ----- | -------------- | ------------
 game    | **name**  | string         | cosmetic game title for error messages or game list
 game    | **gameid**| string         | Sony official gameID, used for artwork and automatic patches if we ever need such thing
-game    | **platform** | string  | value must be `246` or `256`. this is used to indicate the emulator if the game is a SYSTEM256 specific game, and as such, the overclock emulation needs to be applied
+game    | **platform** | string  | value must be `246`, `256` or (`super256` for TimeCrisis4). this command tells the emulator if it should emulate the overclock of the System256 (and SUPER256)
 data    | **elf**   | string         | elf filename to be executed _(must be at the same location than config file)_
 data    | **dongle**| string         | security dongle filename _(must be at the `dongles` folder of PCSX2x6)_
 data    | card  | string         | secondary memory card filename, only useful for SoulCalibur2 Conquest mode _(file must be at the `dongles` folder of PCSX2x6)_
