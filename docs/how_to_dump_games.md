@@ -6,9 +6,19 @@ The SYSTEM246 games, unlike retail PS2s, will have game data and software splitt
 
 
 ## Dump Dongle
+
+### From a retail PS2
 if you posses a jailbroken retail PS2, you may dump all your dongles into an USB thumb drive with [Memory Card Annihilator](https://github.com/ffgriever-pl/Memory-Card-Annihilator/releases)
 
+### From a PC
 If you posses a PS3 CECHZM1 Memory Card adapter, you may use [PS3MCA-TOOL](https://github.com/israpps/ps3mca_tool) to dump your dongles directly to your pc. **just make sure to use the `-imgecc` dump command!**
+
+### From a System246
+
+Unfortunately, due to design restrictions from the arcade Mechacon (security CPU) you won't be able to use your system246 to dump dongles.
+
+> Arcade mechacon does not allow dongle swapping after boot. it gets "married" to the first authorized dongle
+> and the second port only accepts licensed SCPH-10020 memory cards, so it won't read dongles either.
 
 
 ## Dump game Media
