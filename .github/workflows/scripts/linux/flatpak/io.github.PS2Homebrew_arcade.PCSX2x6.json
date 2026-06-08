@@ -1,5 +1,5 @@
 {
-  "app-id": "net.PS2Homebrew-arcade.PCSX2x6",
+  "app-id": "io.github.PS2Homebrew_arcade.PCSX2x6",
   "runtime": "org.kde.Platform",
   "runtime-version": "6.10",
   "sdk": "org.kde.Sdk",
@@ -69,12 +69,12 @@
       ],
       "post-install": [
         "cp -a bin \"${FLATPAK_DEST}\"",
-        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/bin/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/net.PS2Homebrew-arcade.PCSX2x6.png\"",
-        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/pcsx2-qt.desktop\" \"${FLATPAK_DEST}/share/applications/net.PS2Homebrew-arcade.PCSX2x6.desktop\"",
-        "desktop-file-edit --set-key=Icon --set-value=net.PS2Homebrew-arcade.PCSX2x6 \"${FLATPAK_DEST}/share/applications/net.PS2Homebrew-arcade.PCSX2x6.desktop\"",
-        "${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/generate-metainfo.sh \"${FLATPAK_BUILDER_BUILDDIR}/net.PS2Homebrew-arcade.PCSX2x6.metainfo.xml\"",
-        "cat \"${FLATPAK_BUILDER_BUILDDIR}/net.PS2Homebrew-arcade.PCSX2x6.metainfo.xml\"",
-        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/net.PS2Homebrew-arcade.PCSX2x6.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/net.PS2Homebrew-arcade.PCSX2x6.metainfo.xml\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/bin/resources/icons/AppIconLarge.png\" \"${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/io.github.PS2Homebrew_arcade.PCSX2x6.png\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/pcsx2-qt.desktop\" \"${FLATPAK_DEST}/share/applications/io.github.PS2Homebrew_arcade.PCSX2x6.desktop\"",
+        "desktop-file-edit --set-key=Icon --set-value=io.github.PS2Homebrew_arcade.PCSX2x6 \"${FLATPAK_DEST}/share/applications/io.github.PS2Homebrew_arcade.PCSX2x6.desktop\"",
+        "${FLATPAK_BUILDER_BUILDDIR}/.github/workflows/scripts/linux/generate-metainfo.sh \"${FLATPAK_BUILDER_BUILDDIR}/io.github.PS2Homebrew_arcade.PCSX2x6.metainfo.xml\"",
+        "cat \"${FLATPAK_BUILDER_BUILDDIR}/io.github.PS2Homebrew_arcade.PCSX2x6.metainfo.xml\"",
+        "install -Dm644 \"${FLATPAK_BUILDER_BUILDDIR}/io.github.PS2Homebrew_arcade.PCSX2x6.metainfo.xml\" \"${FLATPAK_DEST}/share/metainfo/io.github.PS2Homebrew_arcade.PCSX2x6.metainfo.xml\"",
         "mkdir -p \"${FLATPAK_DEST}/lib/ffmpeg\""
       ]
     }

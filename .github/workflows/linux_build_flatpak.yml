@@ -89,7 +89,7 @@ jobs:
 
       - name: Validate manifest
         run: |
-          flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/net.PS2Homebrew-arcade.PCSX2x6.json
+          flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/io.github.PS2Homebrew_arcade.PCSX2x6.json
 
       - name: Build Flatpak (beta)
         if: ${{ inputs.stableBuild == false || inputs.stableBuild == 'false' }}
@@ -97,7 +97,7 @@ jobs:
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           upload-artifact: false
-          manifest-path: .github/workflows/scripts/linux/flatpak/net.PS2Homebrew-arcade.PCSX2x6.json
+          manifest-path: .github/workflows/scripts/linux/flatpak/io.github.PS2Homebrew_arcade.PCSX2x6.json
           arch: x86_64
           build-bundle: true
           verbose: true
@@ -113,7 +113,7 @@ jobs:
         with:
           bundle: ${{ steps.artifact-metadata.outputs.artifact-name }}.flatpak
           upload-artifact: false
-          manifest-path: .github/workflows/scripts/linux/flatpak/net.PS2Homebrew-arcade.PCSX2x6.json
+          manifest-path: .github/workflows/scripts/linux/flatpak/io.github.PS2Homebrew_arcade.PCSX2x6.json
           arch: x86_64
           build-bundle: true
           verbose: true
