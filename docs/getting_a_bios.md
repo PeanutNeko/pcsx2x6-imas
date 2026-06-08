@@ -1,4 +1,13 @@
-# Spotting the correct BIOS
+
+# Getting a bios
+
+Dump your system2x6 bios using a hacked dongle or an SD2PSX/PSXMemCard or whatever method you have for running elf files from your system2x6
+
+run this modified version of [biosdrain](https://github.com/PS2Homebrew-arcade/biosdrain/releases) from an USB in FAT32/EXFAT or from the SDCard of your SD2PSX/PSXMemCard and you're good to go!
+
+
+
+## making sure it's the correct BIOS
 
 as you probably guessed, SYSTEM246/SYSTEM256 do not use the same bios than retail PlayStation2's
 
