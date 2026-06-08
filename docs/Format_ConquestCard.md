@@ -16,24 +16,26 @@ card=Card0.conquestcard
 
 once you have it, you should be able to run the game and it should accept the conquest card image on the initial check...
 
+
+<figure markdown="span">
 ![cardOK](./img/format_conquestcard1.png){ width="300" }
-/// caption
-Conquest card accepted
-///
+  <!-- <figcaption>Conquest card accepted</figcaption> -->
+</figure>
+
 
 after that, you must enter TESTMODE and select the **DATA CLEAR** > **Clear All** option... like this:
 
-![cardFormat](./img/format_conquestcard0.png){ width="300" }
-/// caption
-Conquest card format schedule
-///
+<figure markdown="span">
+  ![cardFormat](./img/format_conquestcard0.png){ width="300" }
+  <!-- <figcaption>Conquest card format schedule</figcaption> -->
+</figure>
+
 
 
 !!! warning
 
     what this option does is cleanup all settings and schedule a conquest card format for the following reboot (which should happen by pressing exit and save)
     Remember to change back all desired settings, such as FreePlay or Difficulty!
-
 
 after the format is complete (you should see a "now saving"text on top of the screen where conquest card is checked.) the conquest card is ready
 

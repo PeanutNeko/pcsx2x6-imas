@@ -7,6 +7,8 @@ theme:
     - navigation.footer
     - navigation.instant.preview
     - content.tooltips
+  plugins:
+    - glightbox
   name: material
   palette:
     # Dark Mode
@@ -26,6 +28,8 @@ theme:
       accent: deep orange
 
 markdown_extensions:
+  - attr_list
+  - md_in_html
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -37,7 +41,6 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-  - attr_list
   - admonition
   - pymdownx.details
   - pymdownx.tabbed:
