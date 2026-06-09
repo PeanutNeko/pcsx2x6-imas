@@ -277,6 +277,16 @@ void ImGuiManager::UpdateScale()
 	s_global_scale = scale;
 	SetStyle();
 
+	for (u32 i = 0; i < std::size(s_software_cursors); i++)
+	{
+		SoftwareCursor& sc = s_software_cursors[i];
+		if (sc.texture)
+		{
+			sc.extent_x = std::ceil(static_cast<float>(sc.texture->GetWidth()) * sc.scale * s_global_scale) / 2.0f;
+			sc.extent_y = std::ceil(static_cast<float>(sc.texture->GetHeight()) * sc.scale * s_global_scale) / 2.0f;
+		}
+	}
+
 	ImGuiFullscreen::UpdateFontScale();
 
 	if (FullscreenUI::IsInitialized())
