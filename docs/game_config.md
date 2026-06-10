@@ -38,6 +38,7 @@ data    | **mediasrc**| string       | filename of the media file _(must be at t
 data    | **media** | string         | media type of the file from `mediasrc`, value must be `CD`, `DVD` or `HDD`
 data    | 256Region | string     | system256 region override, used by emulator to fake regional signature, saves you from the hassle of having several NVRAM files for the same bios
 data    | sram  | string  | filename for the SRAM settings. if not found, defaults to `sram.bin`
+data    | jvsmode | string | input settings for the game. [see below](#jvsmode)
 
 
 ### `platform`
@@ -50,3 +51,14 @@ the [latest release of proverb](https://github.com/PS2Homebrew-arcade/proverb/re
 
 ### `256Region`
 NOT IMPLEMENTED YET
+
+### jvsmode
+JVS input parameters.
+
+Possible values:
+- `lightgun`
+- `fighting`
+
+!!! note "Temporary solution"
+
+	As this project evolves, this setting value might be deprecated in favor of a gameID detection system
