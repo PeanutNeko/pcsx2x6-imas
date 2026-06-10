@@ -1,0 +1,77 @@
+{
+    "data": [
+        {
+            "version": "v0.0.11",
+            "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/tag/v0.0.11",
+            "semverMajor": 0,
+            "semverMinor": 0,
+            "semverPatch": 11,
+            "description": "- [Add support for Pride GP 2003 and Sengoku Basara X](https://github.com/PS2Homebrew-arcade/pcsx2x6/pull/39)\r\n---\r\n![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/PS2Homebrew-arcade/pcsx2x6/v0.0.11/total?style=for-the-badge&logo=github&label=Downloads&labelColor=000000)\r\n",
+            "assets": {
+                "Linux": [
+                    {
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.11/pcsx2-v0.0.11-linux-appimage-x64-Qt.AppImage",
+                        "displayName": "pcsx2-v0.0.11-linux-appimage-x64-Qt.AppImage",
+                        "additionalTags": [
+                            "x64",
+                            "Qt"
+                        ],
+                        "downloadCount": 2,
+                        "size": 59279864
+                    },
+                    {
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.11/pcsx2-v0.0.11-linux-flatpak-x64-Qt.flatpak",
+                        "displayName": "pcsx2-v0.0.11-linux-flatpak-x64-Qt.flatpak",
+                        "additionalTags": [
+                            "x64",
+                            "Qt"
+                        ],
+                        "downloadCount": 1,
+                        "size": 27869264
+                    }
+                ],
+                "MacOS": [
+                    {
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.11/pcsx2-v0.0.11-macos-Qt.tar.xz",
+                        "displayName": "pcsx2-v0.0.11-macos-Qt.tar.xz",
+                        "additionalTags": [
+                            "Qt"
+                        ],
+                        "downloadCount": 1,
+                        "size": 23937036
+                    }
+                ],
+                "Windows": [
+                    {
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.11/pcsx2-v0.0.11-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2-v0.0.11-windows-x64-Qt-symbols.7z",
+                        "additionalTags": [
+                            "x64",
+                            "Qt",
+                            "symbols"
+                        ],
+                        "downloadCount": 5,
+                        "size": 20472788
+                    },
+                    {
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.11/pcsx2-v0.0.11-windows-x64-Qt.7z",
+                        "displayName": "pcsx2-v0.0.11-windows-x64-Qt.7z",
+                        "additionalTags": [
+                            "x64",
+                            "Qt"
+                        ],
+                        "downloadCount": 40,
+                        "size": 25419343
+                    }
+                ]
+            },
+            "type": 2,
+            "prerelease": true,
+            "createdAt": "2026-06-10T14:37:04Z",
+            "publishedAt": "2026-06-10T14:52:07Z"
+        }
+    ],
+    "pageInfo": {
+        "total": 1
+    }
+}
