@@ -12,3 +12,10 @@ Check the [compatibility tracker list here](https://github.com/PS2Homebrew-arcad
 ???+ note "Looking for collaborators!"
 
     this is my first time working on any kind of emulator software, some stuff like ATA/ATAPI are quite annoying/unintuitive to deal with... any kind of help would be appreciated!
+
+
+---
+## DOWNLOAD
+
+[download latest release](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/latest){ .md-button }
+[download latest nightly](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases){ .md-button }

@@ -9,6 +9,8 @@ theme:
     - content.tooltips
   plugins:
     - glightbox
+    - search
+    - awesome-pages
   name: material
   palette:
     # Dark Mode
