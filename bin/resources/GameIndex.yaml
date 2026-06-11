@@ -155,7 +155,7 @@ NM00024:
 NM00025:
   name: Zoids Infinity - EX
   region: System246
-  bootprog: ZOILOAD
+  bootprog: ZO2LOAD
   media: HDD
   input: twinstick
 NM00026:
