@@ -157,7 +157,7 @@ void Host::ReportFormattedErrorAsync(const std::string_view title, const char* f
 
 std::string Host::GetHTTPUserAgent()
 {
-	return fmt::format("PCSX2 {} ({})", BuildVersion::GitRev, GetOSVersionString());
+	return fmt::format("PCSX2x6 {} ({})", BuildVersion::GitRev, GetOSVersionString());
 }
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()

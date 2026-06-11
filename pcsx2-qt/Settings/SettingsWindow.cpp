@@ -316,7 +316,7 @@ void SettingsWindow::onClearSettingsClicked()
 	if (!isPerGameSettings())
 		return;
 
-	if (QMessageBox::question(this, tr("PCSX2 Settings"),
+	if (QMessageBox::question(this, tr("PCSX2x6 Settings"),
 			tr("The configuration for this game will be cleared.\n\nAny current setting values will be lost.\n\nDo you want to continue?"),
 			QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
 	{
@@ -354,7 +354,7 @@ void SettingsWindow::reopen(const QString& message)
 		close();
 		dlg->show();
 		if (!message.isEmpty())
-			QMessageBox::information(dlg, tr("PCSX2 Settings"), message);
+			QMessageBox::information(dlg, tr("PCSX2x6 Settings"), message);
 	});
 }
 

@@ -36,7 +36,7 @@ static constexpr ISzAlloc g_Alloc = {SzAlloc, SzFree};
 Updater::Updater(ProgressCallback* progress)
 	: m_progress(progress)
 {
-	progress->SetTitle("PCSX2 Update Installer");
+	progress->SetTitle("PCSX2x6 Update Installer");
 }
 
 Updater::~Updater()

@@ -2248,7 +2248,7 @@ bool EmuFolders::SetDataDirectory(Error* error)
 #endif
 			}
 			else // Otherwise use the custom path provided by the user
-				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "PCSX2"));
+				DataRoot = Path::RealPath(Path::Combine(EmuConfig.CustomDataPath, "PCSX2x6"));
 		}
 
 	// Couldn't determine the data directory, or using portable mode? fallback to portable.
