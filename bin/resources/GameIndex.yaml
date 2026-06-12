@@ -100,7 +100,7 @@ NM00016:
   name: Zoids Infinity
   region: System246
   bootprog: ZOILOAD
-  media: DVD
+  media: HDD
   input: twinstick
 NM00017:
   name: Mobile Suit Gundam Zeta - A.E.U.G. vs. Titans DX
@@ -142,7 +142,7 @@ NM00022:
   input: touchscreen
 NM00023:
   name: Taiko Drum Master 7
-  region: System246
+  region: System256
   bootprog: TA7LOAD
   media: DVD
   input: drum
@@ -235,7 +235,7 @@ NM00036:
   input: touchscreen
 NM00037:
   name: Quiz & Variety Suku Suku Inufuku 2 - More Suku Suku
-  region: System256
+  region: System246
   bootprog: DR2LOAD
   media: CD
   input: button
@@ -249,11 +249,11 @@ NM00039:
   name: MotoGP
   region: System256
   bootprog: MGPLOAD
-  media: DVD
+  media: HDD
   input: driving
 NM00040:
   name: Kinnikuman Muscle Grand Prix 2
-  region: System256
+  region: System246
   bootprog: KI2LOAD
   media: DVD
   input: button
