@@ -32,10 +32,10 @@ game    | **name**  | string         | cosmetic game title for error messages or
 game    | **gameid**| string         | Sony official gameID, used for artwork and automatic patches if we ever need such thing
 game    | **platform** | string  | value must be `246`, `256` or (`super256` for TimeCrisis4).
 data    | **elf**   | string         | elf filename to be executed _(must be at the same location than config file)_
-data    | **dongle**| string         | security dongle filename _(must be at the `dongles` folder of PCSX2x6)_
-data    | card  | string         | secondary memory card filename, only useful for SoulCalibur2 Conquest mode _(file must be at the `dongles` folder of PCSX2x6)_
+data    | **dongle**| string         | security dongle filename _(must be at the `memcards` folder of PCSX2x6)_
+data    | card  | string         | secondary memory card filename, only useful for SoulCalibur2 Conquest mode _(file must be at the `memcards` folder of PCSX2x6)_
 data    | **mediasrc**| string       | filename of the media file _(must be at the same location than config file, or subdir if used)_
-data    | **media** | string         | media type of the file from `mediasrc`, value must be `CD`, `DVD` or `HDD`
+data    | **media** | string         | media type of the file from `mediasrc`, value must be `CD`, `DVD` or `HDD`.
 data    | 256Region | string     | system256 region override, used by emulator to fake regional signature, saves you from the hassle of having several NVRAM files for the same bios
 data    | sram  | string  | filename for the SRAM settings. if not found, defaults to `sram.bin`
 data    | jvsmode | string | input settings for the game. [see below](#jvsmode)
@@ -52,7 +52,7 @@ the [latest release of proverb](https://github.com/PS2Homebrew-arcade/proverb/re
 ### `256Region`
 NOT IMPLEMENTED YET
 
-### jvsmode
+### `jvsmode`
 JVS input parameters.
 
 Possible values:
@@ -62,3 +62,22 @@ Possible values:
 !!! note "Temporary solution"
 
 	As this project evolves, this setting value might be deprecated in favor of a gameID detection system
+
+### `media`
+tells the emulator the correct sector size for data transfers (VERY IMPORTANT)
+
+> when game's put requests to read data from their storage device, they don't ask for bytes, they ask for an ammount of LBA's
+> LBA's size (in bytes) depends on the device. it is 512 for HDD, 2048 for DVDs, etc..
+> just make sure to have the proper value here
+
+## game library template
+
+You feel a bit lost? yeah, might be too much to process
+
+however, PCSX2x6 needs more information than regular PCSX2 to run games, since system246 is more complex than retail PS2s
+
+to ease your confusion, the emulator comes bundled with a python script (`utils/arcade_game_template.py`) that will download and setup a template library for each game, providing you with a generic config file for each game and their bootloader
+
+hope it helps out a bit with the confussion
+
+if you don't know how (or want) to setup python for running the script, you may download a [pregenerated package](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.10/system2x6_template_gamelibrary.7z) that gets updated from time to time
