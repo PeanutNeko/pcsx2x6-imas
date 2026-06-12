@@ -2,6 +2,8 @@ site_name: PCSX2x6 - SYSTEM246 Emulator
 site_url: https://PS2Homebrew-arcade.github.io/PCSX2x6/
 theme:
   custom_dir: overrides
+  extra_css:
+    - stylesheets/extra.css
   features:
     - announce.dismiss
     - navigation.footer
@@ -18,18 +20,19 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Dark mode
-      primary: indigo
-      accent: teal
+      primary: deep orange
+      accent: red
 
     # Light Mode
     - scheme: default
       toggle:
         icon: material/weather-night
         name: Light mode
-      primary: blue
-      accent: deep orange
+      primary: deep orange
+      accent: red
 
 markdown_extensions:
+  - pymdownx.critic
   - attr_list
   - md_in_html
   - pymdownx.highlight:

@@ -1,8 +1,24 @@
 # PCSX2x6
-> A PCSX2 fork for NAMCO SYSTEM246 and SYSTEM256 Games!
 
 
-Check the [compatibility tracker list here](https://github.com/PS2Homebrew-arcade/pcsx2x6/issues/9)
+<div class="grid" markdown>
+
+<div markdown>
+
+![Image title](./img/AppIconLarge.png)
+
+</div>
+
+<div markdown>
+
+[:fontawesome-brands-github: compatibility tracker list](https://github.com/PS2Homebrew-arcade/pcsx2x6/issues/9){ .md-button style="display:block" }
+[:fontawesome-brands-github: download latest release](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/latest){ .md-button style="display:block" }
+[:fontawesome-brands-github: download latest nightly](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases){ .md-button style="display:block" }
+[:fontawesome-brands-github: report an issue](https://github.com/PS2Homebrew-arcade/pcsx2x6/issues/new/choose){ .md-button style="display:block" }
+[:fontawesome-brands-discord: Discord Server](https://discord.gg/ghpjzNX7pH){ .md-button style="display:block" }
+
+</div>
+</div>
 
 !!! warning "WIP Project"
 
@@ -15,7 +31,5 @@ Check the [compatibility tracker list here](https://github.com/PS2Homebrew-arcad
 
 
 ---
-## DOWNLOAD
-
-[download latest release](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/latest){ .md-button }
-[download latest nightly](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases){ .md-button }
+## Additional utilities
+[game library template](https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.10/system2x6_template_gamelibrary.7z){ .md-button }
