@@ -1315,6 +1315,14 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 				s_imgname = INI.GetStringValue("data", "mediasrc");
 				s_title = s_serial = INI.GetStringValue("game", "name");
 				s_disc_serial = s_serial = INI.GetStringValue("game", "gameid");
+				bool idvalid = (s_serial.length() == 7 && (s_serial[0] == 'N' && s_serial[1] == 'M'));
+    			for (int i = 2; idvalid && i < 7; i++)
+    			    idvalid = (s_serial[i] >= '0' && s_serial[i] <= '9');
+				if (!idvalid) {
+					Error::SetStringFmt(error, "Invalid GameID! '{}'", s_serial);
+					return false;
+				}
+
 				ACJV::SetGameId(s_serial); // Adapt JVS input to detected GAMEID
 				std::string platform = INI.GetStringValue("game", "platform", "");
 				s_acgame_sys246 = (platform == "246" || platform == "256" || platform == "super256");
@@ -1323,9 +1331,9 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 					PS2CLK = PS2CLK_SS256;
 				else if (s_acgame_sys256)
 					PS2CLK = PS2CLK_S256;
-				if (s_acgame_sys246)
+				if (s_acgame_sys256)
 				{
-					Console.WriteLnFmt(Color_Green, "ACGAME: System {} detected — extended IOP RAM", platform);
+					Console.WriteLnFmt(Color_Green, "ACGAME: System {} requested — overclock will be applied", platform);
 				}
 
 				// When subdir= is set, basedir points to the subdir (e.g. roms/tekken4/).
