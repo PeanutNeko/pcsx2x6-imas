@@ -1,74 +1,74 @@
 {
     "data": [
         {
-            "version": "v0.0.19",
-            "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/tag/v0.0.19",
+            "version": "v0.0.20",
+            "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/tag/v0.0.20",
             "semverMajor": 0,
             "semverMinor": 0,
-            "semverPatch": 19,
-            "description": "## What's Changed\n* Fix fighting game controls to match their PS2 ports by @Tovarichtch in https://github.com/PS2Homebrew-arcade/pcsx2x6/pull/60\n\n\n**Full Changelog**: https://github.com/PS2Homebrew-arcade/pcsx2x6/compare/v0.0.18...v0.0.19",
+            "semverPatch": 20,
+            "description": "## What's Changed\n* Fix Bloody Roar 3 boot by @Tovarichtch in https://github.com/PS2Homebrew-arcade/pcsx2x6/pull/61\n\n\n**Full Changelog**: https://github.com/PS2Homebrew-arcade/pcsx2x6/compare/v0.0.19...v0.0.20",
             "assets": {
                 "Linux": [
                     {
-                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.19/pcsx2x6-v0.0.19-linux-appimage-x64-Qt.AppImage",
-                        "displayName": "pcsx2x6-v0.0.19-linux-appimage-x64-Qt.AppImage",
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.20/pcsx2x6-v0.0.20-linux-appimage-x64-Qt.AppImage",
+                        "displayName": "pcsx2x6-v0.0.20-linux-appimage-x64-Qt.AppImage",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 59279864
+                        "size": 59271672
                     },
                     {
-                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.19/pcsx2x6-v0.0.19-linux-flatpak-x64-Qt.flatpak",
-                        "displayName": "pcsx2x6-v0.0.19-linux-flatpak-x64-Qt.flatpak",
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.20/pcsx2x6-v0.0.20-linux-flatpak-x64-Qt.flatpak",
+                        "displayName": "pcsx2x6-v0.0.20-linux-flatpak-x64-Qt.flatpak",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 27907288
+                        "size": 27914928
                     }
                 ],
                 "MacOS": [
                     {
-                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.19/pcsx2x6-v0.0.19-macos-Qt.tar.xz",
-                        "displayName": "pcsx2x6-v0.0.19-macos-Qt.tar.xz",
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.20/pcsx2x6-v0.0.20-macos-Qt.tar.xz",
+                        "displayName": "pcsx2x6-v0.0.20-macos-Qt.tar.xz",
                         "additionalTags": [
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 23937188
+                        "size": 23942428
                     }
                 ],
                 "Windows": [
                     {
-                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.19/pcsx2x6-v0.0.19-windows-x64-Qt-symbols.7z",
-                        "displayName": "pcsx2x6-v0.0.19-windows-x64-Qt-symbols.7z",
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.20/pcsx2x6-v0.0.20-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2x6-v0.0.20-windows-x64-Qt-symbols.7z",
                         "additionalTags": [
                             "x64",
                             "Qt",
                             "symbols"
                         ],
                         "downloadCount": 0,
-                        "size": 20878610
+                        "size": 20877291
                     },
                     {
-                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.19/pcsx2x6-v0.0.19-windows-x64-Qt.7z",
-                        "displayName": "pcsx2x6-v0.0.19-windows-x64-Qt.7z",
+                        "url": "https://github.com/PS2Homebrew-arcade/pcsx2x6/releases/download/v0.0.20/pcsx2x6-v0.0.20-windows-x64-Qt.7z",
+                        "displayName": "pcsx2x6-v0.0.20-windows-x64-Qt.7z",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 25466405
+                        "size": 25467840
                     }
                 ]
             },
             "type": 2,
             "prerelease": true,
-            "createdAt": "2026-06-14T01:15:54Z",
-            "publishedAt": "2026-06-14T01:28:52Z"
+            "createdAt": "2026-06-14T01:17:55Z",
+            "publishedAt": "2026-06-14T01:30:52Z"
         }
     ],
     "pageInfo": {
