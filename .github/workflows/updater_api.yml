@@ -24,7 +24,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        TAG=${{ inputs.tag }}
+        TAG=${{ inputs.tag || github.event.inputs.tag }}
         gh api repos/PeanutNeko/pcsx2x6-imas/releases/tags/$TAG > release.json
         node scripts/api/index.js release.json docs/api/nightly.json
         cat docs/api/nightly.json
