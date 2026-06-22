@@ -1,8 +1,8 @@
 {
     "data": [
         {
-            "version": "v0.0.25-imas.0",
-            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.0.25-imas.0",
+            "version": "v0.0.25-imas",
+            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.0.25-imas",
             "semverMajor": 0,
             "semverMinor": 0,
             "semverPatch": 25,
@@ -10,8 +10,8 @@
             "assets": {
                 "Linux": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas.0/pcsx2x6-v0.0.25-imas.0-linux-appimage-x64-Qt.AppImage",
-                        "displayName": "pcsx2x6-v0.0.25-imas.0-linux-appimage-x64-Qt.AppImage",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas/pcsx2x6-v0.0.25-imas-linux-appimage-x64-Qt.AppImage",
+                        "displayName": "pcsx2x6-v0.0.25-imas-linux-appimage-x64-Qt.AppImage",
                         "additionalTags": [
                             "x64",
                             "Qt"
@@ -20,8 +20,8 @@
                         "size": 59292152
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas.0/pcsx2x6-v0.0.25-imas.0-linux-flatpak-x64-Qt.flatpak",
-                        "displayName": "pcsx2x6-v0.0.25-imas.0-linux-flatpak-x64-Qt.flatpak",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas/pcsx2x6-v0.0.25-imas-linux-flatpak-x64-Qt.flatpak",
+                        "displayName": "pcsx2x6-v0.0.25-imas-linux-flatpak-x64-Qt.flatpak",
                         "additionalTags": [
                             "x64",
                             "Qt"
@@ -32,8 +32,8 @@
                 ],
                 "MacOS": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas.0/pcsx2x6-v0.0.25-imas.0-macos-Qt.tar.xz",
-                        "displayName": "pcsx2x6-v0.0.25-imas.0-macos-Qt.tar.xz",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas/pcsx2x6-v0.0.25-imas-macos-Qt.tar.xz",
+                        "displayName": "pcsx2x6-v0.0.25-imas-macos-Qt.tar.xz",
                         "additionalTags": [
                             "Qt"
                         ],
@@ -43,8 +43,8 @@
                 ],
                 "Windows": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas.0/pcsx2x6-v0.0.25-imas.0-windows-x64-Qt-symbols.7z",
-                        "displayName": "pcsx2x6-v0.0.25-imas.0-windows-x64-Qt-symbols.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas/pcsx2x6-v0.0.25-imas-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2x6-v0.0.25-imas-windows-x64-Qt-symbols.7z",
                         "additionalTags": [
                             "x64",
                             "Qt",
@@ -54,8 +54,8 @@
                         "size": 20939089
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas.0/pcsx2x6-v0.0.25-imas.0-windows-x64-Qt.7z",
-                        "displayName": "pcsx2x6-v0.0.25-imas.0-windows-x64-Qt.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.25-imas/pcsx2x6-v0.0.25-imas-windows-x64-Qt.7z",
+                        "displayName": "pcsx2x6-v0.0.25-imas-windows-x64-Qt.7z",
                         "additionalTags": [
                             "x64",
                             "Qt"
@@ -67,7 +67,7 @@
             },
             "type": 2,
             "prerelease": true,
-            "createdAt": "2026-06-22T17:02:21Z",
+            "createdAt": "2026-06-22T16:05:06Z",
             "publishedAt": "2026-06-22T17:27:01Z"
         }
     ],
