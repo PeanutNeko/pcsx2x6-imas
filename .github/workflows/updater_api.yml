@@ -7,6 +7,12 @@ on:
       tag:
         required: true
         type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish to updater API'
+        required: true
+        type: string
 jobs:
   update-api:
     runs-on: ubuntu-latest
