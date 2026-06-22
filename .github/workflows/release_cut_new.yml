@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   cut-release:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     name: "Create Tag and Release"
     runs-on: ubuntu-latest
     outputs:
@@ -57,15 +57,15 @@ jobs:
 
       - name: Generate Release Notes
         env:
-          OWNER: PS2Homebrew-arcade
-          REPO: pcsx2x6
+          OWNER: PeanutNeko
+          REPO: pcsx2x6-imas
           GITHUB_TOKEN: ${{ github.token }}
           COMMIT_SHA: ${{ github.SHA }}
         run: |
           cd ./.github/workflows/scripts/releases/generate-release-notes
           npm ci
           node index.js
-          printf "\n----\n%s\n" '![DLs](https://img.shields.io/github/downloads/PS2Homebrew-arcade/pcsx2x6/${{ steps.tag_version.outputs.new_tag }}/total?style=for-the-badge&logo=github&label=Downloads&labelColor=000000)'>>./release-notes.md
+          printf "\n----\n%s\n" '![DLs](https://img.shields.io/github/downloads/PeanutNeko/pcsx2x6-imas/${{ steps.tag_version.outputs.new_tag }}/total?style=for-the-badge&logo=github&label=Downloads&labelColor=000000)'>>./release-notes.md
           mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
 
       - name: Create a GitHub Release (Manual)
@@ -86,12 +86,12 @@ jobs:
           prerelease: true
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           body: |
-            ![DLs](https://img.shields.io/github/downloads/PS2Homebrew-arcade/pcsx2x6/${{ steps.tag_version.outputs.new_tag }}/total?style=for-the-badge&logo=github&label=Downloads&labelColor=000000)
+            ![DLs](https://img.shields.io/github/downloads/PeanutNeko/pcsx2x6-imas/${{ steps.tag_version.outputs.new_tag }}/total?style=for-the-badge&logo=github&label=Downloads&labelColor=000000)
 
   # Build Everything
   # Linux
   build_linux_qt:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     needs:
       - cut-release
     name: "Linux"
@@ -107,7 +107,7 @@ jobs:
     secrets: inherit
 
   build_linux_flatpak:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     needs:
       - cut-release
     name: "Linux"
@@ -124,7 +124,7 @@ jobs:
 
   # Windows
   build_windows_qt:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     needs:
       - cut-release
     name: "Windows"
@@ -141,7 +141,7 @@ jobs:
 
   # MacOS
   build_macos_qt:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     needs:
       - cut-release
     name: "MacOS"
@@ -151,7 +151,7 @@ jobs:
       artifactPrefixName: "PCSX2-macos-Qt"
       fetchTags: true
       stableBuild: ${{ github.event_name == 'workflow_dispatch' && inputs.is_prerelease == 'false' }}
-      sign_and_notarize: true
+      sign_and_notarize: false
     secrets: inherit
 
   # We don't use the artifacts, but we need this for the cache it generates
@@ -169,7 +169,7 @@ jobs:
 
   # Upload the Artifacts
   upload_artifacts:
-    if: github.repository == 'PS2Homebrew-arcade/pcsx2x6'
+    if: github.repository == 'PeanutNeko/pcsx2x6-imas'
     needs:
       - cut-release
       - build_linux_flatpak
@@ -205,11 +205,11 @@ jobs:
         run: |
           TAG_VAL=${{needs.cut-release.outputs.new_tag}}
           echo "TAG_VAL=${TAG_VAL}"
-          gh release list --repo PS2Homebrew-arcade/pcsx2x6
+          gh release list --repo PeanutNeko/pcsx2x6-imas
           mkdir -p ${{ github.WORKSPACE }}/ci-artifacts/out
           TAG_VAL=${TAG_VAL} python ./.github/workflows/scripts/releases/rename-release-assets.py
           ls ${{ github.WORKSPACE }}/ci-artifacts/out
-          gh release upload "${TAG_VAL}" ${{ github.WORKSPACE }}/ci-artifacts/out/*  --repo PS2Homebrew-arcade/pcsx2x6 --clobber
+          gh release upload "${TAG_VAL}" ${{ github.WORKSPACE }}/ci-artifacts/out/*  --repo PeanutNeko/pcsx2x6-imas --clobber
 
       - name: Publish Release
         if: github.event_name != 'workflow_dispatch' || inputs.is_prerelease == 'true'
@@ -218,7 +218,7 @@ jobs:
         run: |
           TAG_VAL=${{needs.cut-release.outputs.new_tag}}
           echo "TAG_VAL=${TAG_VAL}"
-          gh release edit ${TAG_VAL} --draft=false --repo PS2Homebrew-arcade/pcsx2x6
+          gh release edit ${TAG_VAL} --draft=false --repo PeanutNeko/pcsx2x6-imas
 
       - uses: actions/setup-node@v6
         with:
@@ -226,11 +226,15 @@ jobs:
 
       - name: Announce Release
         env:
-          OWNER: PS2Homebrew-arcade
-          REPO: pcsx2x6
+          OWNER: PeanutNeko
+          REPO: pcsx2x6-imas
           DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_CHAN }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          if [ -z "${DISCORD_BUILD_WEBHOOK}" ]; then
+            echo "Skipping Discord announcement because DISCORD_RELEASE_CHAN is not configured."
+            exit 0
+          fi
           TAG_VAL=${{needs.cut-release.outputs.new_tag}}
           cd ./.github/workflows/scripts/releases/announce-release
           npm ci

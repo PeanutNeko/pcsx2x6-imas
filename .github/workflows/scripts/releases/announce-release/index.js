@@ -62,8 +62,8 @@ if (!releaseInfo.prerelease) {
 // Publish Webhook
 const embed = new MessageEmbed()
   .setColor('#FF0000')
-  .setTitle('New PCSX2x6 Nightly Build Available!')
-  .setDescription("To download the latest or previous builds, [visit the official downloads page](https://ps2homebrew-arcade.github.io/pcsx2x6/).")
+  .setTitle('New PCSX2x6 imas Nightly Build Available!')
+  .setDescription("To download the latest or previous builds, [visit the GitHub releases page](https://github.com/PeanutNeko/pcsx2x6-imas/releases).")
   .addFields(
     { name: 'Version', value: releaseInfo.tag_name, inline: true },
     { name: 'Included Changes', value: releaseInfo.body, inline: false }
@@ -73,12 +73,10 @@ console.log(embed);
 // Get all webhooks, simple comma-sep string
 const webhookUrls = process.env.DISCORD_BUILD_WEBHOOK.split(",");
 
-const ROLE_ID = "1513000483583824032"; // PCSX2x6 @follower role
-
 for (const url of webhookUrls) {
   const webhookClient = new WebhookClient({ url: url });
   await webhookClient.send({
-    content: `<@&${ROLE_ID}>`,
+    content: `New PCSX2x6 imas nightly build available: ${releaseInfo.tag_name}`,
     embeds: [embed],
   });
 }
