@@ -1,74 +1,74 @@
 {
     "data": [
         {
-            "version": "v0.0.23-imas",
-            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.0.23-imas",
+            "version": "v0.0.24-imas.0",
+            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.0.24-imas.0",
             "semverMajor": 0,
             "semverMinor": 0,
-            "semverPatch": 23,
-            "description": "- Docs: Update README [skip ci]\n\n----",
+            "semverPatch": 24,
+            "description": "**Full Changelog**: https://github.com/PeanutNeko/pcsx2x6-imas/compare/v0.0.23-imas...v0.0.24-imas.0",
             "assets": {
                 "Linux": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.23-imas/pcsx2x6-v0.0.23-imas-linux-appimage-x64-Qt.AppImage",
-                        "displayName": "pcsx2x6-v0.0.23-imas-linux-appimage-x64-Qt.AppImage",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.24-imas.0/pcsx2x6-v0.0.24-imas.0-linux-appimage-x64-Qt.AppImage",
+                        "displayName": "pcsx2x6-v0.0.24-imas.0-linux-appimage-x64-Qt.AppImage",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 59283960
+                        "size": 59288056
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.23-imas/pcsx2x6-v0.0.23-imas-linux-flatpak-x64-Qt.flatpak",
-                        "displayName": "pcsx2x6-v0.0.23-imas-linux-flatpak-x64-Qt.flatpak",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.24-imas.0/pcsx2x6-v0.0.24-imas.0-linux-flatpak-x64-Qt.flatpak",
+                        "displayName": "pcsx2x6-v0.0.24-imas.0-linux-flatpak-x64-Qt.flatpak",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 27889584
+                        "size": 27888656
                     }
                 ],
                 "MacOS": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.23-imas/pcsx2x6-v0.0.23-imas-macos-Qt.tar.xz",
-                        "displayName": "pcsx2x6-v0.0.23-imas-macos-Qt.tar.xz",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.24-imas.0/pcsx2x6-v0.0.24-imas.0-macos-Qt.tar.xz",
+                        "displayName": "pcsx2x6-v0.0.24-imas.0-macos-Qt.tar.xz",
                         "additionalTags": [
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 23943976
+                        "size": 23945252
                     }
                 ],
                 "Windows": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.23-imas/pcsx2x6-v0.0.23-imas-windows-x64-Qt-symbols.7z",
-                        "displayName": "pcsx2x6-v0.0.23-imas-windows-x64-Qt-symbols.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.24-imas.0/pcsx2x6-v0.0.24-imas.0-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2x6-v0.0.24-imas.0-windows-x64-Qt-symbols.7z",
                         "additionalTags": [
                             "x64",
                             "Qt",
                             "symbols"
                         ],
                         "downloadCount": 0,
-                        "size": 20888795
+                        "size": 20889890
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.23-imas/pcsx2x6-v0.0.23-imas-windows-x64-Qt.7z",
-                        "displayName": "pcsx2x6-v0.0.23-imas-windows-x64-Qt.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.0.24-imas.0/pcsx2x6-v0.0.24-imas.0-windows-x64-Qt.7z",
+                        "displayName": "pcsx2x6-v0.0.24-imas.0-windows-x64-Qt.7z",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 25466888
+                        "size": 25467698
                     }
                 ]
             },
             "type": 2,
             "prerelease": true,
-            "createdAt": "2026-06-22T09:27:26Z",
-            "publishedAt": "2026-06-22T14:47:41Z"
+            "createdAt": "2026-06-22T16:05:06Z",
+            "publishedAt": "2026-06-22T16:18:05Z"
         }
     ],
     "pageInfo": {
