@@ -108,7 +108,7 @@ function(write_svnrev_h)
 		set(PCSX2_DISPLAY_GIT_REV "${PCSX2_DISPLAY_GIT_REV}${PCSX2_VERSION_SUFFIX}")
 	endif()
 
-	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
+	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)(-imas(\\.[0-9]+)?)?$")
 		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
 			"#define GIT_TAG \"${PCSX2_DISPLAY_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 1\n"
