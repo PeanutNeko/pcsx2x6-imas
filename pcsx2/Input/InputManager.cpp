@@ -166,6 +166,8 @@ struct PointerAxisState
 	float last_value;
 };
 static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
+static std::array<std::array<std::atomic_bool, InputManager::MAX_POINTER_BUTTONS>, InputManager::MAX_POINTER_DEVICES>
+	s_host_pointer_button_states;
 static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
 	s_pointer_state;
 static std::array<float, 2> s_pointer_axis_speed;
@@ -1406,6 +1408,9 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerButton)
 	{
+		if (key.source_index < MAX_POINTER_DEVICES && key.data < MAX_POINTER_BUTTONS)
+			s_host_pointer_button_states[key.source_index][key.data].store(value != 0.0f, std::memory_order_release);
+
 		if (ImGuiManager::ProcessPointerButtonEvent(key, value))
 			return true;
 	}
@@ -1475,6 +1480,13 @@ std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 {
 	return std::make_pair(s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::X)],
 		s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
+}
+
+bool InputManager::GetPointerButtonState(u32 index, u32 button_index)
+{
+	return (index < MAX_POINTER_DEVICES && button_index < MAX_POINTER_BUTTONS) ?
+		s_host_pointer_button_states[index][button_index].load(std::memory_order_acquire) :
+		false;
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)

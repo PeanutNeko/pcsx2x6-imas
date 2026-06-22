@@ -1174,6 +1174,7 @@ void DEV9async(u32 cycles)
 {
 	smap_async(cycles);
 	dev9.ata->Async(cycles);
+	ACUART::StreamImas(cycles); // imas card reader UART pipe responder
 	ACUART::StreamV257(cycles); // Ridge Racer V self-test: stream the V257 drive-board status...
 	ACJV::UpdateFcaFrame();     // ...and free-run the FCA-1 input frame
 }

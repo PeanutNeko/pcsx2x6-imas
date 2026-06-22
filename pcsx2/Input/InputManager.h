@@ -298,6 +298,9 @@ namespace InputManager
 	/// Reads absolute pointer position.
 	std::pair<float, float> GetPointerAbsolutePosition(u32 index);
 
+	/// Reads the current host pointer button state.
+	bool GetPointerButtonState(u32 index, u32 button_index);
+
 	/// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
 	void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 

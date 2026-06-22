@@ -1495,7 +1495,7 @@ bool Host::RequestResetSettings(bool folders, bool core, bool controllers, bool 
 
 QString QtHost::GetAppNameAndVersion()
 {
-	return QString("PCSX2x6 %1").arg(BuildVersion::GitRev);
+	return QString("PCSX2x6 imas %1").arg(BuildVersion::GitRev);
 }
 
 QString QtHost::GetAppConfigSuffix()

@@ -19,7 +19,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         TAG=${{ inputs.tag }}
-        gh api repos/PS2Homebrew-arcade/pcsx2x6/releases/tags/$TAG > release.json
+        gh api repos/PeanutNeko/pcsx2x6-imas/releases/tags/$TAG > release.json
         node scripts/api/index.js release.json docs/api/nightly.json
         cat docs/api/nightly.json
     

@@ -98,36 +98,46 @@ function(get_git_version_info)
 endfunction()
 
 function(write_svnrev_h)
+	set(PCSX2_VERSION_SUFFIX "-imas")
+	set(PCSX2_DISPLAY_GIT_TAG "${PCSX2_GIT_TAG}")
+	set(PCSX2_DISPLAY_GIT_REV "${PCSX2_GIT_REV}")
+	if(PCSX2_DISPLAY_GIT_TAG AND NOT "${PCSX2_DISPLAY_GIT_TAG}" MATCHES "-imas")
+		set(PCSX2_DISPLAY_GIT_TAG "${PCSX2_DISPLAY_GIT_TAG}${PCSX2_VERSION_SUFFIX}")
+	endif()
+	if(PCSX2_DISPLAY_GIT_REV AND NOT "${PCSX2_DISPLAY_GIT_REV}" MATCHES "-imas")
+		set(PCSX2_DISPLAY_GIT_REV "${PCSX2_DISPLAY_GIT_REV}${PCSX2_VERSION_SUFFIX}")
+	endif()
+
 	if ("${PCSX2_GIT_TAG}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
-			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_TAG \"${PCSX2_DISPLAY_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 1\n"
 			"#define GIT_TAG_HI  ${CMAKE_MATCH_1}\n"
 			"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
 			"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
-			"#define GIT_REV \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_REV \"${PCSX2_DISPLAY_GIT_TAG}\"\n"
 			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
 		)
 	elseif ("${PCSX2_GIT_REV}" MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)")
 		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
-			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_TAG \"${PCSX2_DISPLAY_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 0\n"
 			"#define GIT_TAG_HI  ${CMAKE_MATCH_1}\n"
 			"#define GIT_TAG_MID ${CMAKE_MATCH_2}\n"
 			"#define GIT_TAG_LO  ${CMAKE_MATCH_3}\n"
-			"#define GIT_REV \"${PCSX2_GIT_REV}\"\n"
+			"#define GIT_REV \"${PCSX2_DISPLAY_GIT_REV}\"\n"
 			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
 		)
 	else()
 		file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h
-			"#define GIT_TAG \"${PCSX2_GIT_TAG}\"\n"
+			"#define GIT_TAG \"${PCSX2_DISPLAY_GIT_TAG}\"\n"
 			"#define GIT_TAGGED_COMMIT 0\n"
 			"#define GIT_TAG_HI 0\n"
 			"#define GIT_TAG_MID 0\n"
 			"#define GIT_TAG_LO 0\n"
-			"#define GIT_REV \"${PCSX2_GIT_REV}\"\n"
+			"#define GIT_REV \"${PCSX2_DISPLAY_GIT_REV}\"\n"
 			"#define GIT_HASH \"${PCSX2_GIT_HASH}\"\n"
 			"#define GIT_DATE \"${PCSX2_GIT_DATE}\"\n"
 		)

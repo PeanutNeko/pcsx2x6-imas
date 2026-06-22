@@ -63,8 +63,8 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 #define UPDATE_ADDITIONAL_TAGS "SSE4"
 #endif
 
-#define LATEST_RELEASE_URL "https://raw.githubusercontent.com/PS2Homebrew-arcade/pcsx2x6/refs/heads/gh_pages/docs/api/%1.json"
-#define CHANGES_URL "https://api.github.com/repos/PS2Homebrew-arcade/pcsx2x6/compare/%1...%2"
+#define LATEST_RELEASE_URL "https://raw.githubusercontent.com/PeanutNeko/pcsx2x6-imas/refs/heads/gh_pages/docs/api/%1.json"
+#define CHANGES_URL "https://api.github.com/repos/PeanutNeko/pcsx2x6-imas/compare/%1...%2"
 
 // Available release channels.
 static const char* UPDATE_TAGS[] = {"stable", "nightly"};

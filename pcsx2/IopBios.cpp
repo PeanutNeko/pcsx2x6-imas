@@ -23,10 +23,13 @@
 #include <fmt/format.h>
 #include <sys/stat.h>
 #include <algorithm>
+#include <deque>
+#include <vector>
 
 #include <fcntl.h>
 
 #ifdef _WIN32
+#include "common/RedtapeWindows.h"
 #include <io.h>
 #else
 #include <unistd.h>
@@ -1065,6 +1068,383 @@ namespace R3000A
 		}
 	} // namespace sysmem
 
+	namespace acuart
+	{
+		struct Attr
+		{
+			s32 speed = 0;
+			s32 fifo = 0;
+			s32 loopback = 0;
+			s32 padding = 0;
+		};
+
+		static Attr s_attr;
+
+#ifdef _WIN32
+		static HANDLE s_pipe = INVALID_HANDLE_VALUE;
+		static bool s_pipe_warned = false;
+		static OVERLAPPED s_write_overlapped = {};
+		static bool s_write_event_valid = false;
+		static bool s_write_pending = false;
+		static std::vector<u8> s_write_buffer;
+		static std::deque<std::vector<u8>> s_write_queue;
+		static bool s_sent_packet = false;
+		static u32 s_tx_log_count = 0;
+		static u32 s_rx_log_count = 0;
+		static u32 s_packet_log_count = 0;
+
+		static bool IsImas()
+		{
+			return ACJV::GetGameId() == "NM00022";
+		}
+
+		static HANDLE GetPipe()
+		{
+			if (s_pipe != INVALID_HANDLE_VALUE)
+				return s_pipe;
+
+			s_pipe = CreateFileW(LR"(\\.\pipe\imas)", GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+			if (s_pipe == INVALID_HANDLE_VALUE && !s_pipe_warned)
+			{
+				Console.WriteLn("ACUART HLE: imas pipe not available.");
+				s_pipe_warned = true;
+			}
+			return s_pipe;
+		}
+
+		static void ClosePipe()
+		{
+			if (s_pipe != INVALID_HANDLE_VALUE)
+			{
+				if (s_write_pending)
+					CancelIo(s_pipe);
+				CloseHandle(s_pipe);
+				s_pipe = INVALID_HANDLE_VALUE;
+			}
+			if (s_write_event_valid)
+			{
+				CloseHandle(s_write_overlapped.hEvent);
+				s_write_overlapped = {};
+				s_write_event_valid = false;
+			}
+			s_write_pending = false;
+			s_write_buffer.clear();
+			s_write_queue.clear();
+			s_sent_packet = false;
+		}
+
+		static bool EnsureWriteEvent()
+		{
+			if (s_write_event_valid)
+				return true;
+
+			s_write_overlapped = {};
+			s_write_overlapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+			s_write_event_valid = s_write_overlapped.hEvent != nullptr;
+			if (!s_write_event_valid)
+				ClosePipe();
+			return s_write_event_valid;
+		}
+
+		static void PumpWrite()
+		{
+			if (!s_write_pending && s_write_queue.empty())
+				return;
+
+			HANDLE pipe = GetPipe();
+			if (pipe == INVALID_HANDLE_VALUE)
+				return;
+
+			if (s_write_pending)
+			{
+				DWORD written = 0;
+				if (!GetOverlappedResult(pipe, &s_write_overlapped, &written, FALSE))
+				{
+					const DWORD error = GetLastError();
+					if (error == ERROR_IO_INCOMPLETE)
+						return;
+
+					if (s_packet_log_count < 16)
+					{
+						Console.WriteLn("ACUART HLE: imas packet write failed (%u)", static_cast<unsigned>(error));
+						s_packet_log_count++;
+					}
+					ClosePipe();
+					return;
+				}
+
+				if (written != s_write_buffer.size())
+				{
+					if (s_packet_log_count < 16)
+					{
+						Console.WriteLn("ACUART HLE: imas packet short write (%u/%u bytes)",
+							static_cast<unsigned>(written), static_cast<unsigned>(s_write_buffer.size()));
+						s_packet_log_count++;
+					}
+					ClosePipe();
+					return;
+				}
+
+				if (s_packet_log_count < 16)
+				{
+					Console.WriteLn("ACUART HLE: imas packet write ok (%u bytes)", static_cast<unsigned>(written));
+					s_packet_log_count++;
+				}
+				s_write_pending = false;
+				s_write_buffer.clear();
+				ResetEvent(s_write_overlapped.hEvent);
+			}
+
+			if (s_write_queue.empty())
+				return;
+			if (!EnsureWriteEvent())
+				return;
+
+			s_write_buffer = std::move(s_write_queue.front());
+			s_write_queue.pop_front();
+			if (s_write_buffer.empty())
+			{
+				s_write_buffer.clear();
+				return;
+			}
+
+			DWORD written = 0;
+			if (WriteFile(pipe, s_write_buffer.data(), static_cast<DWORD>(s_write_buffer.size()), &written, &s_write_overlapped))
+			{
+				if (written != s_write_buffer.size())
+				{
+					if (s_packet_log_count < 16)
+					{
+						Console.WriteLn("ACUART HLE: imas packet short write (%u/%u bytes)",
+							static_cast<unsigned>(written), static_cast<unsigned>(s_write_buffer.size()));
+						s_packet_log_count++;
+					}
+					ClosePipe();
+					return;
+				}
+
+				if (s_packet_log_count < 16)
+				{
+					Console.WriteLn("ACUART HLE: imas packet write ok (%u bytes)", static_cast<unsigned>(written));
+					s_packet_log_count++;
+				}
+				s_write_buffer.clear();
+				ResetEvent(s_write_overlapped.hEvent);
+				return;
+			}
+
+			const DWORD error = GetLastError();
+			if (error == ERROR_IO_PENDING)
+			{
+				s_write_pending = true;
+				return;
+			}
+
+			if (s_packet_log_count < 16)
+			{
+				Console.WriteLn("ACUART HLE: imas packet write failed (%u)", static_cast<unsigned>(error));
+				s_packet_log_count++;
+			}
+			ClosePipe();
+		}
+
+		static bool ReadBlock(HANDLE pipe, u8* data, DWORD size, DWORD* read)
+		{
+			*read = 0;
+
+			OVERLAPPED overlapped = {};
+			overlapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+			if (!overlapped.hEvent)
+			{
+				ClosePipe();
+				return false;
+			}
+
+			if (!ReadFile(pipe, data, size, read, &overlapped))
+			{
+				const DWORD error = GetLastError();
+				if (error == ERROR_IO_PENDING)
+				{
+					if (WaitForSingleObject(overlapped.hEvent, 0) != WAIT_OBJECT_0 ||
+						!GetOverlappedResult(pipe, &overlapped, read, FALSE))
+					{
+						CancelIoEx(pipe, &overlapped);
+						CloseHandle(overlapped.hEvent);
+						return false;
+					}
+				}
+				else if (error != ERROR_MORE_DATA)
+				{
+					CloseHandle(overlapped.hEvent);
+					ClosePipe();
+					return false;
+				}
+			}
+
+			CloseHandle(overlapped.hEvent);
+			return *read != 0;
+		}
+
+		static void DrainPipeInput(HANDLE pipe)
+		{
+			for (;;)
+			{
+				DWORD available = 0;
+				if (!PeekNamedPipe(pipe, nullptr, 0, nullptr, &available, nullptr))
+				{
+					ClosePipe();
+					return;
+				}
+				if (available == 0)
+					return;
+
+				u8 buffer[256];
+				DWORD read = 0;
+				if (!ReadBlock(pipe, buffer, std::min<DWORD>(available, static_cast<DWORD>(sizeof(buffer))), &read))
+					return;
+			}
+		}
+#endif
+
+		int acUartRead_HLE()
+		{
+			if (ACJV::GetGameId() != "NM00022")
+				return 0;
+
+			v0 = 0;
+#ifdef _WIN32
+			PumpWrite();
+			if (!s_sent_packet)
+			{
+				pc = ra;
+				return 1;
+			}
+
+			HANDLE pipe = GetPipe();
+			if (pipe != INVALID_HANDLE_VALUE)
+			{
+				DWORD available = 0;
+				if (!PeekNamedPipe(pipe, nullptr, 0, nullptr, &available, nullptr))
+				{
+					ClosePipe();
+				}
+				else if (available != 0)
+				{
+					const DWORD size = std::min<DWORD>(a1, available);
+					std::vector<u8> buffer(size);
+					DWORD read = 0;
+					if (ReadBlock(pipe, buffer.data(), size, &read))
+					{
+						for (DWORD i = 0; i < read; i++)
+						{
+							iopMemWrite8(a0 + i, buffer[i]);
+							if (s_rx_log_count < 64)
+							{
+								Console.WriteLn("ACUART HLE: imas RX %02X", buffer[i]);
+								s_rx_log_count++;
+							}
+						}
+						v0 = read;
+						psxCpu->Clear(a0, (read + 3) / 4);
+					}
+				}
+			}
+#endif
+			pc = ra;
+			return 1;
+		}
+
+		int acUartWrite_HLE()
+		{
+			if (ACJV::GetGameId() != "NM00022")
+				return 0;
+
+			v0 = 0;
+#ifdef _WIN32
+			if (a1 == 0)
+			{
+				if (s_tx_log_count < 64)
+				{
+					Console.WriteLn("ACUART HLE: imas TX empty");
+					s_tx_log_count++;
+				}
+				pc = ra;
+				return 1;
+			}
+
+			PumpWrite();
+			HANDLE pipe = GetPipe();
+			if (pipe != INVALID_HANDLE_VALUE)
+			{
+				if (s_tx_log_count < 64)
+					Console.WriteLn("ACUART HLE: imas TX packet size %u", static_cast<unsigned>(a1));
+				std::vector<u8> buffer(a1);
+				for (u32 i = 0; i < a1; i++)
+				{
+					buffer[i] = iopMemRead8(a0 + i);
+					if (s_tx_log_count < 64)
+					{
+						Console.WriteLn("ACUART HLE: imas TX %02X", buffer[i]);
+						s_tx_log_count++;
+					}
+				}
+
+				if (!s_sent_packet)
+					DrainPipeInput(pipe);
+				if (s_write_queue.size() >= 16)
+					s_write_queue.pop_front();
+				s_write_queue.push_back(std::move(buffer));
+				s_sent_packet = true;
+				PumpWrite();
+				v0 = a1;
+			}
+#endif
+			pc = ra;
+			return 1;
+		}
+
+		int acUartWait_HLE()
+		{
+			if (ACJV::GetGameId() != "NM00022")
+				return 0;
+
+#ifdef _WIN32
+			PumpWrite();
+#endif
+			v0 = 0;
+			pc = ra;
+			return 1;
+		}
+
+		int acUartGetAttr_HLE()
+		{
+			if (ACJV::GetGameId() != "NM00022")
+				return 0;
+
+			iopMemWrite32(a0 + 0, s_attr.speed);
+			iopMemWrite32(a0 + 4, s_attr.fifo);
+			iopMemWrite32(a0 + 8, s_attr.loopback);
+			iopMemWrite32(a0 + 12, s_attr.padding);
+			v0 = 0;
+			pc = ra;
+			return 1;
+		}
+
+		int acUartSetAttr_HLE()
+		{
+			if (ACJV::GetGameId() != "NM00022")
+				return 0;
+
+			s_attr.speed = iopMemRead32(a0 + 0);
+			s_attr.fifo = iopMemRead32(a0 + 4);
+			s_attr.loopback = iopMemRead32(a0 + 8);
+			s_attr.padding = iopMemRead32(a0 + 12);
+			v0 = 0;
+			pc = ra;
+			return 1;
+		}
+	} // namespace acuart
+
 	namespace loadcore
 	{
 
@@ -1395,6 +1775,19 @@ namespace R3000A
 			EXPORT_H(  4, CreateThread)
 			EXPORT_H(  6, StartThread)
 		END_MODULE
+		if (libname == "acuart" || libname == "ACUART" || libname == "UART_driver" ||
+			libname == "UART_dri" || libname == "mc0:ACUART" || libname == "ac0:ACUART")
+		{
+			using namespace acuart;
+			switch (index)
+			{
+				EXPORT_H(  8, acUartRead)
+				EXPORT_H(  9, acUartWrite)
+				EXPORT_H( 10, acUartWait)
+				EXPORT_H( 11, acUartGetAttr)
+				EXPORT_H( 12, acUartSetAttr)
+			}
+		}
 
 		// Special case with ioman and iomanX
 		// They are mostly compatible excluding stat structures

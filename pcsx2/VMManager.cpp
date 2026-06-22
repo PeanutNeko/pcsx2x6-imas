@@ -1400,6 +1400,11 @@ bool VMManager::AutoDetectSource(const std::string& filename, Error* error)
 						ACJV::SetMode(JVS_MODE::DRIVE);
 						Console.WriteLn(Color_Green, "ACGAME: jvsmode=racing");
 					}
+					else if (jvsmode == "touchscreen")
+					{
+						ACJV::SetMode(JVS_MODE::TOUCH);
+						Console.WriteLn(Color_Green, "ACGAME: jvsmode=touchscreen");
+					}
 					else
 						ACJV::SetMode(JVS_MODE::DEFAULT);
 				}

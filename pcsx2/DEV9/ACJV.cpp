@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <string>
 
 enum ACJVCMD {
@@ -448,6 +449,10 @@ static float m_jvsLightgunDX = -1.0f;  // normalized display X (-1 = off-screen)
 static float m_jvsLightgunDY = -1.0f;  // normalized display Y (-1 = off-screen)
 static u16 m_jvsWheelChannels[JVS_WHEEL_CHANNEL_MAX] = {};
 static u16 m_jvsDrumChannels[JVS_DRUM_CHANNEL_MAX] = {};
+static bool s_imasLeft = true;
+static bool s_imasRight = false;
+static bool s_imasButton2 = false;
+static u64 s_imasBeginTime = 0;
 
 static float m_wheelSteerR = 0.0f; // stick right  -> steering positive
 static float m_wheelSteerL = 0.0f; // stick left   -> steering negative
@@ -498,6 +503,52 @@ static const std::map<std::string, RacingLayout> s_racing_layouts = {
 	{"NM00005", RacingLayout::WANGAN},       // Wangan Midnight R
 	{"NM00001", RacingLayout::RRV},          // Ridge Racer V (discovery sweep)
 };
+
+static bool IsImas()
+{
+	return s_gameid == "NM00022";
+}
+
+static bool IsTouchPanelGame()
+{
+	return s_gameid == "NM00014" || s_gameid == "NM00020" || s_gameid == "NM00022" ||
+		s_gameid == "NM00028" || s_gameid == "NM00036";
+}
+
+static u64 GetMilliseconds()
+{
+	return static_cast<u64>(std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::steady_clock::now().time_since_epoch()).count());
+}
+
+static void UpdateImas(u8 gpvalue)
+{
+	const u64 now = GetMilliseconds();
+	if (gpvalue & 0x10)
+	{
+		const u64 delta = now - s_imasBeginTime;
+		const u64 phase = delta % 6000;
+		s_imasLeft = phase < 1000;
+		s_imasButton2 = phase > 2000 && phase < 5000;
+		s_imasRight = phase > 3000 && phase < 4000;
+	}
+	else
+	{
+		s_imasBeginTime = now;
+		s_imasLeft = true;
+		s_imasRight = false;
+		s_imasButton2 = false;
+	}
+}
+
+static u16 GetImasButtonState()
+{
+	u16 buttons = m_jvsButtonState[0];
+	buttons = s_imasButton2 ? (buttons | JVS_BTN_2) : (buttons & static_cast<u16>(~JVS_BTN_2));
+	buttons = s_imasLeft ? (buttons | JVS_BTN_LEFT) : (buttons & static_cast<u16>(~JVS_BTN_LEFT));
+	buttons = s_imasRight ? (buttons | JVS_BTN_RIGHT) : (buttons & static_cast<u16>(~JVS_BTN_RIGHT));
+	return buttons;
+}
 
 // Gamepad input -> JVS button state: set or clear a button bit for a player
 void ACJV::SetButtonState(u32 player, u16 mask, bool pressed)
@@ -585,10 +636,14 @@ void ACJV::SetGameId(const std::string& gameid)
 	m_jvsButtonState[1] = 0;
 	m_jvsSystemButtonState = 0;
 	m_testButtonState = 0;
-	m_jvsScreenPosX = 0;
-	m_jvsScreenPosY = 0;
+	m_jvsScreenPosX = IsTouchPanelGame() ? 0xFFFF : 0;
+	m_jvsScreenPosY = IsTouchPanelGame() ? 0xFFFF : 0;
 	m_jvsLightgunDX = -1.0f;
 	m_jvsLightgunDY = -1.0f;
+	s_imasLeft = true;
+	s_imasRight = false;
+	s_imasButton2 = false;
+	s_imasBeginTime = GetMilliseconds();
 	std::memset(m_jvsWheelChannels, 0, sizeof(m_jvsWheelChannels));
 	std::memset(m_jvsDrumChannels, 0, sizeof(m_jvsDrumChannels));
 
@@ -629,6 +684,8 @@ void ACJV::SetGameId(const std::string& gameid)
 		CurrentBoardID = MIU_IO_JPN_GUN_EXTENTI;
 	else if (gameid == "NM00010" || gameid == "NM00015")
 		CurrentBoardID = TAITO_BG3_IO_PCB; // BG3/BG3T: real Taito K91X0951A board ID (from the F22 EPROM dump)
+	else if (IsTouchPanelGame())
+		CurrentBoardID = FCB_JPN_TOUCHPANEL;
 	else
 		CurrentBoardID = RAYS_PCB;
 }
@@ -662,6 +719,33 @@ static void UpdateLightgunFromMouse()
 	const auto& gm = ACJV::GetGunMapping();
 	if (gm.sensor)
 		ACJV::SetButtonState(0, gm.sensor, gm.sensor_active_high ? on_screen : !on_screen);
+}
+
+static void UpdateTouchFromMouse()
+{
+	if (!InputManager::GetPointerButtonState(0, 0))
+	{
+		m_jvsScreenPosX = 0xFFFF;
+		m_jvsScreenPosY = 0xFFFF;
+		return;
+	}
+
+	const auto& [mx, my] = InputManager::GetPointerAbsolutePosition(0);
+	float dx, dy;
+	GSTranslateWindowToDisplayCoordinates(mx, my, &dx, &dy);
+	constexpr float edge_margin = 0.01f;
+	if (dx >= 0.0f && dy >= 0.0f && dx < (1.0f - edge_margin) && dy < (1.0f - edge_margin))
+	{
+		m_jvsScreenPosX = static_cast<u16>(std::clamp(dx, 0.0f, 1.0f) * 0xFFFF);
+		m_jvsScreenPosY = static_cast<u16>((1.0f - std::clamp(dy, 0.0f, 1.0f)) * 0xFFFF);
+		if (m_jvsScreenPosX == 0) m_jvsScreenPosX = 1;
+		if (m_jvsScreenPosY == 0) m_jvsScreenPosY = 1;
+	}
+	else
+	{
+		m_jvsScreenPosX = 0xFFFF;
+		m_jvsScreenPosY = 0xFFFF;
+	}
 }
 
 // Combine host axes into the 3 JVS analog channels (steer/gas/brake). Steering encoding is per-game.
@@ -806,8 +890,6 @@ void do_jvs_packet(const u8* input, u8* output) {
 				(*dstSize) += 4;
 			}
 #endif
-			// TODO: touch panel games
-#if 0
 			else if(m_jvsMode == JVS_MODE::TOUCH)
 			{
 				(*output++) = 0x06; //Screen Pos Input
@@ -815,9 +897,17 @@ void do_jvs_packet(const u8* input, u8* output) {
 				(*output++) = 0x10; //Y pos bits
 				(*output++) = 0x01; //channels
 
+				if (IsImas())
+				{
+					(*output++) = 0x12; //GPIO output
+					(*output++) = 0x06; //slot count
+					(*output++) = 0x00;
+					(*output++) = 0x00;
+					(*dstSize) += 4;
+				}
+
 				(*dstSize) += 4;
 			}
-#endif
 			(*output++) = 0x00; //End of features
 
 			(*dstSize) += 10;
@@ -851,8 +941,9 @@ void do_jvs_packet(const u8* input, u8* output) {
 			(*output++) = m_testButtonState|(s_dip_switch_state & TESTMODE);
 			//(*output++) = (m_jvsSystemButtonState == 0x03) ? 0x80 : 0;  //Test
 
-			(*output++) = static_cast<u8>(m_jvsButtonState[0]);      //Player 1
-			(*output++) = static_cast<u8>(m_jvsButtonState[0] >> 8); //Player 1
+			const u16 p1ButtonState = IsImas() ? GetImasButtonState() : m_jvsButtonState[0];
+			(*output++) = static_cast<u8>(p1ButtonState);      //Player 1
+			(*output++) = static_cast<u8>(p1ButtonState >> 8); //Player 1
 			(*dstSize) += 4;
 
 			//if (m_jvsButtonState[0])
@@ -986,6 +1077,8 @@ void do_jvs_packet(const u8* input, u8* output) {
 
 			if(m_jvsMode == JVS_MODE::LIGHTGUN)
 				UpdateLightgunFromMouse();
+			else if(m_jvsMode == JVS_MODE::TOUCH)
+				UpdateTouchFromMouse();
 
 			(*output++) = JVS_CMD_SUCCESS;
 
@@ -1005,6 +1098,11 @@ void do_jvs_packet(const u8* input, u8* output) {
 					posY = static_cast<u16>(m_jvsLightgunDY * scaleY);
 				if (posX == 0) posX = 1;
 				if (posY == 0) posY = 1;
+			}
+			else if(m_jvsMode == JVS_MODE::TOUCH)
+			{
+				posX = m_jvsScreenPosX;
+				posY = m_jvsScreenPosY;
 			}
 			for (u8 ch = 0; ch < channel; ch++)
 			{
@@ -1033,6 +1131,9 @@ void do_jvs_packet(const u8* input, u8* output) {
 				u8 gpvalue = (*input++);
 				inWorkChecksum += gpvalue;
 				inSize--;
+
+				if (IsImas())
+					UpdateImas(gpvalue);
 
 				if(i == 1)
 				{
