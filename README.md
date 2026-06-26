@@ -44,10 +44,10 @@ serialpath = \\.\pipe\imas
 
 Start `YaCardEmu.exe` before starting the game.
 
-For image printing and more accurate erase behavior, the Play-imas README recommends this modified fork:
+For im@s image printing and more accurate erase behavior, use my modified fork:
 
 ```text
-https://github.com/moonmagian/YACardEmu-imas
+https://github.com/PeanutNeko/YACardEmu-imas
 ```
 
 ### Step 3: Enable touchscreen JVS mode
