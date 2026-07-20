@@ -1,74 +1,41 @@
 {
     "data": [
         {
-            "version": "v0.2.1-imas",
-            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.2.1-imas",
+            "version": "v0.2.11-imas",
+            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.2.11-imas",
             "semverMajor": 0,
             "semverMinor": 2,
-            "semverPatch": 1,
-            "description": "- DEV9: Add im@s support on latest pcsx2x6\n\n----",
+            "semverPatch": 11,
+            "description": "- DEV9: Update im@s support to PCSX2x6 v0.2.11\n\n- Sync the imas branch with upstream PCSX2x6 v0.2.11.\n- Preserve IDOLM@STER card reader, and shutter.\n- Update the README.\n\n----",
             "assets": {
-                "Linux": [
-                    {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.1-imas/pcsx2x6-v0.2.1-imas-linux-appimage-x64-Qt.AppImage",
-                        "displayName": "pcsx2x6-v0.2.1-imas-linux-appimage-x64-Qt.AppImage",
-                        "additionalTags": [
-                            "x64",
-                            "Qt"
-                        ],
-                        "downloadCount": 0,
-                        "size": 57936376
-                    },
-                    {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.1-imas/pcsx2x6-v0.2.1-imas-linux-flatpak-x64-Qt.flatpak",
-                        "displayName": "pcsx2x6-v0.2.1-imas-linux-flatpak-x64-Qt.flatpak",
-                        "additionalTags": [
-                            "x64",
-                            "Qt"
-                        ],
-                        "downloadCount": 0,
-                        "size": 26551224
-                    }
-                ],
-                "MacOS": [
-                    {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.1-imas/pcsx2x6-v0.2.1-imas-macos-Qt.tar.xz",
-                        "displayName": "pcsx2x6-v0.2.1-imas-macos-Qt.tar.xz",
-                        "additionalTags": [
-                            "Qt"
-                        ],
-                        "downloadCount": 0,
-                        "size": 22548492
-                    }
-                ],
                 "Windows": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.1-imas/pcsx2x6-v0.2.1-imas-windows-x64-Qt-symbols.7z",
-                        "displayName": "pcsx2x6-v0.2.1-imas-windows-x64-Qt-symbols.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.11-imas/pcsx2x6-v0.2.11-imas-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2x6-v0.2.11-imas-windows-x64-Qt-symbols.7z",
                         "additionalTags": [
                             "x64",
                             "Qt",
                             "symbols"
                         ],
                         "downloadCount": 0,
-                        "size": 21129296
+                        "size": 21148632
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.1-imas/pcsx2x6-v0.2.1-imas-windows-x64-Qt.7z",
-                        "displayName": "pcsx2x6-v0.2.1-imas-windows-x64-Qt.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.11-imas/pcsx2x6-v0.2.11-imas-windows-x64-Qt.7z",
+                        "displayName": "pcsx2x6-v0.2.11-imas-windows-x64-Qt.7z",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 24055420
+                        "size": 24059092
                     }
                 ]
             },
             "type": 2,
             "prerelease": true,
-            "createdAt": "2026-07-13T01:45:52Z",
-            "publishedAt": "2026-07-13T03:04:54Z"
+            "createdAt": "2026-07-20T16:35:42Z",
+            "publishedAt": "2026-07-20T16:53:15Z"
         }
     ],
     "pageInfo": {
