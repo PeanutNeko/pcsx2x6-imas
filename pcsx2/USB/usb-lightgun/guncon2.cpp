@@ -503,7 +503,7 @@ namespace usb_lightgun
 	{
 		const auto& [wx, wy] = s->GetAbsolutePositionFromRelativeAxes();
 		float dx, dy;
-		GSTranslateWindowToDisplayCoordinates(wx, wy, &dx, &dy);
+		GSTranslateWindowToDisplayCoordinatesUnclamped(wx, wy, &dx, &dy);
 		ACJV::SetGunRelativeAim(s->port, dx, dy);
 	}
 
@@ -541,10 +541,10 @@ namespace usb_lightgun
 
 		const s32 prev_pointer_index = s->GetSoftwarePointerIndex();
 
-		s->has_relative_binds = (USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeLeft") ||
-			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeRight") ||
-			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeUp") ||
-			USB::ConfigKeyExists(si, s->port, TypeName(), "RelativeDown"));
+		s->has_relative_binds = (!USB::GetConfigString(si, s->port, TypeName(), "RelativeLeft").empty() ||
+			!USB::GetConfigString(si, s->port, TypeName(), "RelativeRight").empty() ||
+			!USB::GetConfigString(si, s->port, TypeName(), "RelativeUp").empty() ||
+			!USB::GetConfigString(si, s->port, TypeName(), "RelativeDown").empty()); // empty/cleared binds must not latch relative aim
 
 		// Arcade aim goes through ACJV; the Aim Device is either the mouse (Pointer-N) or a controller stick.
 		const bool joystick_aim = !pointer_binding.empty() && !StringUtil::StartsWithNoCase(pointer_binding, "Pointer-");
@@ -562,10 +562,13 @@ namespace usb_lightgun
 
 		if (cursor_changed)
 		{
-			// Only clear a gun's own dedicated slot; slot 0 is the shared mouse pointer (another player/gun
-			// may be aiming with it), so switching this gun off it must not yank slot 0 out from under them.
-			if (prev_pointer_index != new_pointer_index && prev_pointer_index >= static_cast<s32>(InputManager::MAX_POINTER_DEVICES))
-				ImGuiManager::ClearSoftwareCursor(prev_pointer_index);
+			const u32 other_port = s->port ^ 1u;
+			const bool other_aims_mouse = USB::GetConfigDevice(si, other_port) == TypeName() &&
+				StringUtil::StartsWithNoCase(USB::GetConfigString(si, other_port, TypeName(), "Pointer"), "Pointer-") &&
+				!USB::GetConfigString(si, other_port, TypeName(), "cursor_path").empty();
+			if (prev_pointer_index != new_pointer_index &&
+				(prev_pointer_index >= static_cast<s32>(InputManager::MAX_POINTER_DEVICES) || !other_aims_mouse))
+				ImGuiManager::ClearSoftwareCursor(prev_pointer_index); // shared slot 0: keep only while the other gun aims with it
 
 			const bool had_software_cursor = !s->cursor_path.empty();
 
@@ -630,8 +633,14 @@ namespace usb_lightgun
 						ACJV::SetButtonState(player, mapping.p1_trigger, pressed);
 					break;
 				}
-				// Foot pedal (cover/reload system: TC3, TC4, Cobra)
-				case BID_A:       ACJV::SetButtonState(player, ACJV::GetGunMapping().pedal, pressed); break;
+				// Foot pedal (cover/reload system: TC3, TC4, Cobra). Vampire Night has no pedal
+				// switch, so there the bind forces the camera-lost report = a manual reload.
+				case BID_A:
+					if (ACJV::GetGunMapping().board == GunBoardModel::CameraVN)
+						ACJV::SetGunForceOffscreen(pressed);
+					else
+						ACJV::SetButtonState(player, ACJV::GetGunMapping().pedal, pressed);
+					break;
 				// Start: P1 uses p1_start, P2 uses p2_start if defined (Vampire Night 2P)
 				case BID_START:
 				{

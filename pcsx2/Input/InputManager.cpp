@@ -166,8 +166,6 @@ struct PointerAxisState
 	float last_value;
 };
 static std::array<std::array<float, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES> s_host_pointer_positions;
-static std::array<std::array<std::atomic_bool, InputManager::MAX_POINTER_BUTTONS>, InputManager::MAX_POINTER_DEVICES>
-	s_host_pointer_button_states;
 static std::array<std::array<PointerAxisState, static_cast<u8>(InputPointerAxis::Count)>, InputManager::MAX_POINTER_DEVICES>
 	s_pointer_state;
 static std::array<float, 2> s_pointer_axis_speed;
@@ -175,6 +173,7 @@ static std::array<float, 2> s_pointer_axis_dead_zone;
 static std::array<float, 2> s_pointer_axis_range;
 static std::array<float, 2> s_pointer_pos = {0.0f, 0.0f};
 static float s_pointer_inertia = 0.0f;
+static std::array<u32, InputManager::MAX_POINTER_DEVICES> s_pointer_button_state = {};
 
 using PointerMoveCallback = std::function<void(InputBindingKey key, float value)>;
 using KeyboardEventCallback = std::function<void(InputBindingKey key, float value)>;
@@ -884,6 +883,8 @@ void InputManager::AddJVSBindings(SettingsInterface& si, bool is_profile)
 		}}, InputBindingInfo::Type::Button, si, ACJV::CONFIG_SECTION, bi.name, is_profile);
 	}
 
+	ACJV::SetGunOffscreenContour(si.GetFloatValue(ACJV::CONFIG_SECTION, "GunOffscreenContour", 1.0f) / 100.0f);
+
 	const std::span<const InputBindingInfo> player_bindings[] = {
 		ACJV::GetButtonBindings(),
 		ACJV::GetP2ButtonBindings(),
@@ -1012,6 +1013,38 @@ void InputManager::AddJVSBindings(SettingsInterface& si, bool is_profile)
 		AddBindings(bindings, InputAxisEventHandler{[channel = static_cast<u32>(bi.bind_index)](InputBindingKey key, float value) {
 			ACJV::SetDrumHit(channel, value > 0.5f);
 		}}, bi.bind_type, si, ACJV::CONFIG_SECTION, bi.name, is_profile);
+	}
+
+	// Touch panel: press bind + relative-aim axes + crosshair
+	{
+		const std::vector<std::string> press(si.GetStringList(ACJV::CONFIG_SECTION, "TouchPress"));
+		ACJV::SetTouchPressBound(!press.empty());
+		if (!press.empty())
+		{
+			AddBindings(press, InputAxisEventHandler{[](InputBindingKey, float value) {
+				ACJV::SetTouchPressed(value > 0.5f);
+			}}, InputBindingInfo::Type::Button, si, ACJV::CONFIG_SECTION, "TouchPress", is_profile);
+		}
+
+		static constexpr const char* touch_axes[] = {"TouchRelativeLeft", "TouchRelativeRight", "TouchRelativeUp", "TouchRelativeDown"};
+		bool any_relative = false;
+		for (u32 i = 0; i < std::size(touch_axes); i++)
+		{
+			const std::vector<std::string> axis(si.GetStringList(ACJV::CONFIG_SECTION, touch_axes[i]));
+			if (axis.empty())
+				continue;
+			any_relative = true;
+			AddBindings(axis, InputAxisEventHandler{[i](InputBindingKey, float value) {
+				ACJV::SetTouchRelativeAxis(i, value);
+			}}, InputBindingInfo::Type::HalfAxis, si, ACJV::CONFIG_SECTION, touch_axes[i], is_profile);
+		}
+		ACJV::SetTouchRelativeActive(any_relative);
+
+		const std::string color_str(si.GetStringValue(ACJV::CONFIG_SECTION, "TouchCursorColor", "#ffffff"));
+		const u32 color = color_str.empty() ? 0xFFFFFFu :
+			static_cast<u32>(std::strtoul(color_str.c_str() + (color_str[0] == '#' ? 1 : 0), nullptr, 16));
+		ACJV::SetTouchCursor(si.GetStringValue(ACJV::CONFIG_SECTION, "TouchCursorPath", ""),
+			si.GetFloatValue(ACJV::CONFIG_SECTION, "TouchCursorScale", 1.0f), color);
 	}
 }
 
@@ -1222,6 +1255,15 @@ bool InputManager::IsAxisHandler(const InputEventHandler& handler)
 
 bool InputManager::InvokeEvents(InputBindingKey key, float value, GenericInputBinding generic_key)
 {
+	if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerButton &&
+		key.source_index < MAX_POINTER_DEVICES && key.data < 32)
+	{
+		if (value > 0.0f)
+			s_pointer_button_state[key.source_index] |= (1u << key.data);
+		else
+			s_pointer_button_state[key.source_index] &= ~(1u << key.data);
+	}
+
 	if (DoEventHook(key, value))
 		return true;
 
@@ -1420,9 +1462,6 @@ bool InputManager::PreprocessEvent(InputBindingKey key, float value, GenericInpu
 	}
 	else if (key.source_type == InputSourceType::Pointer && key.source_subtype == InputSubclass::PointerButton)
 	{
-		if (key.source_index < MAX_POINTER_DEVICES && key.data < MAX_POINTER_BUTTONS)
-			s_host_pointer_button_states[key.source_index][key.data].store(value != 0.0f, std::memory_order_release);
-
 		if (ImGuiManager::ProcessPointerButtonEvent(key, value))
 			return true;
 	}
@@ -1494,11 +1533,11 @@ std::pair<float, float> InputManager::GetPointerAbsolutePosition(u32 index)
 		s_host_pointer_positions[index][static_cast<u8>(InputPointerAxis::Y)]);
 }
 
-bool InputManager::GetPointerButtonState(u32 index, u32 button_index)
+bool InputManager::IsPointerButtonDown(u32 index, u32 button_index)
 {
-	return (index < MAX_POINTER_DEVICES && button_index < MAX_POINTER_BUTTONS) ?
-		s_host_pointer_button_states[index][button_index].load(std::memory_order_acquire) :
-		false;
+	if (index >= MAX_POINTER_DEVICES || button_index >= 32)
+		return false;
+	return (s_pointer_button_state[index] & (1u << button_index)) != 0;
 }
 
 void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)

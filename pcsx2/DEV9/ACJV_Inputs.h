@@ -206,12 +206,19 @@ static constexpr InputBindingInfo s_standard_baseball[] = {
 	{"Baseball_B", TRANSLATE_NOOP("JVS", "Full Swing / Run"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_2, GenericInputBinding::Square},
 	{"Baseball_C", TRANSLATE_NOOP("JVS", "Relay Throw"),      nullptr, InputBindingInfo::Type::Button, JVS_BTN_3, GenericInputBinding::Triangle},
 };
+// Quiz Inufuku 2 (NM00037): answer buttons 1-4, wired on the Up/Down/Left/Right switch bits.
+static constexpr InputBindingInfo s_standard_inufuku[] = {
+	{"Inufuku_1", TRANSLATE_NOOP("JVS", "Button 1"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_UP,    GenericInputBinding::Triangle},
+	{"Inufuku_2", TRANSLATE_NOOP("JVS", "Button 2"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_DOWN,  GenericInputBinding::Cross},
+	{"Inufuku_3", TRANSLATE_NOOP("JVS", "Button 3"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_LEFT,  GenericInputBinding::Square},
+	{"Inufuku_4", TRANSLATE_NOOP("JVS", "Button 4"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_RIGHT, GenericInputBinding::Circle},
+};
 // Gundam Quiz Warrior (NM00030): a quiz, but on the same 4-button wiring as the Gundam VS games (own keys).
 static constexpr InputBindingInfo s_standard_gundamquiz[] = {
-	{"GundamQuiz_Shoot",  TRANSLATE_NOOP("JVS", "Shoot"),  nullptr, InputBindingInfo::Type::Button, JVS_BTN_1, GenericInputBinding::Square},
-	{"GundamQuiz_Melee",  TRANSLATE_NOOP("JVS", "Melee"),  nullptr, InputBindingInfo::Type::Button, JVS_BTN_2, GenericInputBinding::Triangle},
-	{"GundamQuiz_Jump",   TRANSLATE_NOOP("JVS", "Jump"),   nullptr, InputBindingInfo::Type::Button, JVS_BTN_3, GenericInputBinding::Cross},
-	{"GundamQuiz_Target", TRANSLATE_NOOP("JVS", "Target"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_4, GenericInputBinding::Circle},
+	{"GundamQuiz_Target", TRANSLATE_NOOP("JVS", "Answer A"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_4, GenericInputBinding::Circle},
+	{"GundamQuiz_Shoot",  TRANSLATE_NOOP("JVS", "Answer B"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_1, GenericInputBinding::Square},
+	{"GundamQuiz_Melee",  TRANSLATE_NOOP("JVS", "Answer C"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_2, GenericInputBinding::Triangle},
+	{"GundamQuiz_Jump",   TRANSLATE_NOOP("JVS", "Answer D"), nullptr, InputBindingInfo::Type::Button, JVS_BTN_3, GenericInputBinding::Cross},
 };
 
 // Standard page: section title + action buttons per layout.
@@ -220,6 +227,7 @@ static constexpr ACJV::LayoutInfo s_standard_layout_ui[] = {
 	{"Technic Beat",               s_standard_technicbeat, false},
 	{"Necchuu! Pro Yakyuu 2002",   s_standard_baseball,    false},
 	{"Gundam Quiz Warrior",        s_standard_gundamquiz,  false},
+	{"Quiz Suku Suku Inufuku 2",   s_standard_inufuku,     false, TRANSLATE_NOOP("JVS", "Answer buttons 1-4 sit on the Up/Down/Left/Right switches")},
 };
 
 static constexpr const std::array<InputBindingInfo, 2> s_jvs_coin_bindings = {{

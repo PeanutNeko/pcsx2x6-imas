@@ -35,6 +35,10 @@ on:
         required: false
         type: boolean
         default: false
+      versionTag:
+        required: false
+        type: string
+        default: ""
       stableBuild:
         required: false
         type: boolean
@@ -90,6 +94,11 @@ jobs:
       - name: Validate manifest
         run: |
           flatpak-builder-lint manifest .github/workflows/scripts/linux/flatpak/io.github.PS2Homebrew_arcade.PCSX2x6.json
+
+      - name: Set forced version tag
+        if: inputs.versionTag != ''
+        run: |
+          sed -i 's/"-DDISABLE_ADVANCE_SIMD=TRUE"/"-DDISABLE_ADVANCE_SIMD=TRUE",\n          "-DPCSX2_FORCED_GIT_TAG=${{ inputs.versionTag }}"/' .github/workflows/scripts/linux/flatpak/io.github.PS2Homebrew_arcade.PCSX2x6.json
 
       - name: Build Flatpak (beta)
         if: ${{ inputs.stableBuild == false || inputs.stableBuild == 'false' }}

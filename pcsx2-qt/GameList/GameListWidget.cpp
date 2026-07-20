@@ -232,7 +232,7 @@ void GameListWidget::initialize()
 		}
 	}
 
-	for (u32 region = 0; region < static_cast<u32>(GameList::Region::Count); region++)
+	for (u32 region = static_cast<u32>(GameList::Region::SYSTEM246); region < static_cast<u32>(GameList::Region::Count); region++)
 	{
 		m_ui.filterRegion->addItem(GameListModel::getIconForRegion(static_cast<GameList::Region>(region)),
 			GameList::RegionToString(static_cast<GameList::Region>(region), true));

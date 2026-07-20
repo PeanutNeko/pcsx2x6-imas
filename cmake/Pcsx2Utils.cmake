@@ -44,6 +44,7 @@ function(detect_compiler)
 endfunction()
 
 function(get_git_version_info)
+	set(PCSX2_FORCED_GIT_TAG "" CACHE STRING "Override the displayed Git tag/revision for packaged builds")
 	set(PCSX2_GIT_REV "")
 	set(PCSX2_GIT_TAG "")
 	set(PCSX2_GIT_HASH "")
@@ -81,6 +82,13 @@ function(get_git_version_info)
 			OUTPUT_STRIP_TRAILING_WHITESPACE
 			ERROR_QUIET)
 	endif()
+
+	if(PCSX2_FORCED_GIT_TAG)
+		set(PCSX2_GIT_TAG "${PCSX2_FORCED_GIT_TAG}")
+		set(PCSX2_GIT_REV "${PCSX2_FORCED_GIT_TAG}")
+		message("Using forced tag: ${PCSX2_FORCED_GIT_TAG}")
+	endif()
+
 	if (NOT PCSX2_GIT_REV)
 		EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
 			OUTPUT_VARIABLE PCSX2_GIT_REV
@@ -89,6 +97,9 @@ function(get_git_version_info)
 		if (NOT PCSX2_GIT_REV)
 			set(PCSX2_GIT_REV "Unknown")
 		endif()
+	endif()
+	if (NOT PCSX2_GIT_HASH AND DEFINED ENV{GITHUB_SHA})
+		set(PCSX2_GIT_HASH "$ENV{GITHUB_SHA}")
 	endif()
 
 	set(PCSX2_GIT_REV "${PCSX2_GIT_REV}" PARENT_SCOPE)

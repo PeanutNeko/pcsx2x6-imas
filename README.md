@@ -1,14 +1,14 @@
 # PCSX2x6 imas
 
-This fork adds IDOLM@STER support on top of [PCSX2x6](https://github.com/PS2Homebrew-arcade/pcsx2x6).
+This fork adds IDOLM@STER support on top of [PCSX2x6](https://github.com/PS2Homebrew-arcade/pcsx2x6). The current imas branch is based on PCSX2x6 v0.2.11.
 
 These imas changes are based on the behavior documented and implemented by [Play-imas](https://github.com/moonmagian/Play-imas/tree/imas):
 
 - card reader communication through a Windows named pipe
 - shutter status response for the IDOLM@STER cabinet check
-- touchscreen input for IDOLM@STER
+- touchscreen input through PCSX2x6's built-in FCB touch panel support
 
-Currently, IDOLM@STER card reader support is intended for Windows builds using YaCardEmu.
+Currently, IDOLM@STER card reader support is intended for Windows builds using [YaCardEmu](https://github.com/GXTX/YACardEmu) or [YACardEmu-imas](https://github.com/PeanutNeko/YACardEmu-imas).
 
 ## Running IDOLM@STER
 
@@ -17,7 +17,7 @@ Currently, IDOLM@STER card reader support is intended for Windows builds using Y
 Put the dongle file in your PCSX2x6 memcards folder:
 
 ```text
-Documents\PCSX2x6\memcards\[dongle file]
+\PCSX2x6\memcards\[dongle file]
 ```
 
 Put the HDD CHD in the `subdir` folder specified by the game's `.acgame` file.
@@ -30,13 +30,11 @@ For example, if the `.acgame` file contains `subdir=NM00022`, place the HDD CHD 
 
 ### Step 2: Start YaCardEmu
 
-Use YaCardEmu for card reader emulation:
+Use the original [GXTX/YACardEmu](https://github.com/GXTX/YACardEmu) for card reader emulation.
 
-```text
-https://github.com/GXTX/YACardEmu
-```
+As another option, you can use [PeanutNeko/YACardEmu-imas](https://github.com/PeanutNeko/YACardEmu-imas). I created it with im@s-focused card management, image printing, and more accurate erase behavior.
 
-Set this in the YaCardEmu config:
+For either version, set this in the YaCardEmu config:
 
 ```ini
 serialpath = \\.\pipe\imas
@@ -44,15 +42,11 @@ serialpath = \\.\pipe\imas
 
 Start `YaCardEmu.exe` before starting the game.
 
-For im@s image printing and more accurate erase behavior, use this modified fork:
+### Step 3: Check touchscreen JVS mode
 
-```text
-https://github.com/PeanutNeko/YACardEmu-imas
-```
+Current PCSX2x6 builds detect `NM00022` as a touchscreen game automatically through PCSX2x6's built-in touch panel support. You usually do not need to add a `jvsmode` entry.
 
-### Step 3: Enable touchscreen JVS mode
-
-Add `jvsmode=touchscreen` to the game's `.acgame` file:
+If you are using a custom `.acgame` file or a custom game ID, force touchscreen mode with:
 
 ```ini
 jvsmode=touchscreen
@@ -76,11 +70,7 @@ ENTER: Square
 TEST: Configure in JVS Controls
 ```
 
-The test menu can be used to set free play and disable closing time. Offline mode can be configured using Bandai Namco's offline mode instructions:
-
-```text
-https://www.idolmaster.jp/imas/arcade/idolmaster_offline.pdf
-```
+The test menu can be used to set free play and disable closing time. Offline mode can be configured using [Bandai Namco's offline mode instructions](https://www.idolmaster.jp/imas/arcade/idolmaster_offline.pdf).
 
 Touchscreen input uses the mouse position only while the left mouse button is pressed.
 
@@ -96,15 +86,15 @@ YaCardEmu connects to that pipe and emulates the reader side.
 
 The game also checks cabinet shutter status through JVS outputs. After the game sends the GPIO shutter-check signal, this fork overrides the related JVS output sequence so the game sees the expected cabinet state.
 
-The touchscreen path maps mouse clicks to the game's touch coordinates when `jvsmode=touchscreen` is enabled.
+The touchscreen path maps mouse clicks to the game's touch coordinates when touchscreen JVS mode is active. By default, touching uses the mouse position only while the left mouse button is pressed.
 
 ## Related Projects
 
-- PCSX2x6: https://github.com/PS2Homebrew-arcade/pcsx2x6
-- PCSX2: https://github.com/PCSX2/pcsx2
-- Play-imas: https://github.com/moonmagian/Play-imas/tree/imas
-- YaCardEmu: https://github.com/GXTX/YACardEmu
-- YACardEmu-imas: https://github.com/PeanutNeko/YACardEmu-imas
+- [PCSX2x6](https://github.com/PS2Homebrew-arcade/pcsx2x6)
+- [PCSX2](https://github.com/PCSX2/pcsx2)
+- [Play-imas](https://github.com/moonmagian/Play-imas/tree/imas)
+- [GXTX/YACardEmu](https://github.com/GXTX/YACardEmu)
+- [PeanutNeko/YACardEmu-imas](https://github.com/PeanutNeko/YACardEmu-imas)
 
 ---
 

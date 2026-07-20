@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Host.h"
 #include "Input/InputManager.h"
+#include "ImGui/ImGuiManager.h"
 #include "GS/GS.h"
 #include "common/SettingsInterface.h"
 #include <algorithm>
@@ -376,14 +377,14 @@ static float m_wheelGas    = 0.0f; // right trigger (R2)
 static float m_wheelBrake  = 0.0f; // left trigger  (L2)
 
 // Per-game JVS button mapping for lightgun games, keyed by NM game ID (see issue #9).
-// Field order: pedal, sensor, sensor_active_high, p1_start, p2_start, p1_trigger, p2_trigger
-// Each value is a JVS bit from JVSButton enum. 0 = not used for this game.
-static const GunMapping s_default_gun_mapping = {JVS_BTN_3, JVS_BTN_RIGHT, false, 0, 0, JVS_BTN_2, 0};
+// Field order: pedal, sensor, sensor_active_high, p1_start, p2_start, p1_trigger, p2_trigger, board
+// Each button value is a JVS bit from JVSButton enum. 0 = not used for this game.
+static const GunMapping s_default_gun_mapping = {JVS_BTN_3, JVS_BTN_RIGHT, false, 0, 0, JVS_BTN_2, 0, GunBoardModel::Classic};
 static const std::map<std::string, GunMapping> s_gun_mappings = {
-	{"NM00003", {0,            0x200,         true,  JVS_BTN_3,  JVS_BTN_6, JVS_BTN_2,    JVS_BTN_5}}, // Vampire Night
-	{"NM00012", {JVS_BTN_6,    0,             false, 0,          0,          JVS_BTN_2,    0}},          // Time Crisis 3
-	{"NM00021", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0}},          // Cobra The Arcade
-	{"NM00032", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0}},          // Time Crisis 4
+	{"NM00003", {0,            0x200,         true,  JVS_BTN_3,  JVS_BTN_6, JVS_BTN_2,    JVS_BTN_5, GunBoardModel::CameraVN}},      // Vampire Night
+	{"NM00012", {JVS_BTN_6,    0,             false, 0,          0,          JVS_BTN_2,    0,         GunBoardModel::TwoTierTC3}},     // Time Crisis 3
+	{"NM00021", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0,         GunBoardModel::Classic}},       // Cobra The Arcade
+	{"NM00032", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0,         GunBoardModel::SideSwitchTC4}}, // Time Crisis 4
 };
 static const GunMapping* m_gunMapping = &s_default_gun_mapping;
 
@@ -425,6 +426,7 @@ static const std::map<std::string, StandardLayout> s_standard_layouts = {
 	{"NM00006", StandardLayout::SMASHCOURT},  // Smash Court Pro Tournament
 	{"NM10003", StandardLayout::TECHNICBEAT}, // Technic Beat (unique unofficial gameid; NM00003 = Vampire Night, GameIndex PR #92)
 	{"NM00030", StandardLayout::GUNDAMQUIZ},  // Gundam Quiz Warrior (moved from Fighting: a quiz, not a fighter)
+	{"NM00037", StandardLayout::INUFUKU},     // Quiz Suku Suku Inufuku 2
 };
 
 // Drum (Taiko) and twin-stick (Zoids) gameids for ResolveModeFromGameId (no per-button table).
@@ -433,6 +435,13 @@ static constexpr const char* s_drum_games[] = {
 	"NM00046", "NM00051", "NM00053", "NM00054", "NM00056", "NM00057",
 };
 static constexpr const char* s_twinstick_games[] = {"NM00016", "NM00025"};
+static constexpr const char* s_touch_games[] = { // V290 FCB touch panel games
+	"NM00014", // Dragon Chronicle
+	"NM00020", // Dragon Chronicle Online
+	"NM00022", // THE IDOLM@STER
+	"NM00028", // Druaga Online
+	"NM00036", // Zenno Training (Whole Brain)
+};
 
 // Derive the JVS device mode from the gameid alone (jvsmode= is an optional override, see VMManager).
 JVS_MODE ACJV::ResolveModeFromGameId(const std::string& gameid)
@@ -445,6 +454,8 @@ JVS_MODE ACJV::ResolveModeFromGameId(const std::string& gameid)
 		return JVS_MODE::DRUM;
 	if (std::ranges::find(s_twinstick_games, gameid) != std::ranges::end(s_twinstick_games))
 		return JVS_MODE::TWINSTICK;
+	if (std::ranges::find(s_touch_games, gameid) != std::ranges::end(s_touch_games))
+		return JVS_MODE::TOUCH;
 	return JVS_MODE::DEFAULT;
 }
 
@@ -486,6 +497,7 @@ std::span<const InputBindingInfo> ACJV::GetStandardButtons()
 		case StandardLayout::SMASHCOURT:  return s_standard_smashcourt;
 		case StandardLayout::TECHNICBEAT: return s_standard_technicbeat;
 		case StandardLayout::GUNDAMQUIZ:  return s_standard_gundamquiz;
+		case StandardLayout::INUFUKU:     return s_standard_inufuku;
 	}
 	return {};
 }
@@ -516,12 +528,6 @@ std::span<const ACJV::RacingLayoutInfo> ACJV::GetRacingLayouts()
 static bool IsImas()
 {
 	return s_gameid == "NM00022";
-}
-
-static bool IsTouchPanelGame()
-{
-	return s_gameid == "NM00014" || s_gameid == "NM00020" || s_gameid == "NM00022" ||
-		s_gameid == "NM00028" || s_gameid == "NM00036";
 }
 
 static u64 GetMilliseconds()
@@ -659,11 +665,10 @@ void ACJV::SetGameId(const std::string& gameid)
 	m_jvsButtonState[1] = 0;
 	m_jvsSystemButtonState = 0;
 	m_testButtonState = 0;
-	const bool touch_panel_game = IsTouchPanelGame();
 	for (u32 p = 0; p < JVS_PLAYER_COUNT; p++)
 	{
-		m_jvsScreenPosX[p] = touch_panel_game ? 0xFFFF : 0;
-		m_jvsScreenPosY[p] = touch_panel_game ? 0xFFFF : 0;
+		m_jvsScreenPosX[p] = 0;
+		m_jvsScreenPosY[p] = 0;
 		m_jvsLightgunDX[p] = -1.0f;
 		m_jvsLightgunDY[p] = -1.0f;
 	}
@@ -701,8 +706,8 @@ void ACJV::SetGameId(const std::string& gameid)
 		CurrentBoardID = MIU_IO_JPN_GUN_EXTENTI;
 	else if (gameid == "NM00010" || gameid == "NM00015")
 		CurrentBoardID = TAITO_BG3_IO_PCB; // BG3/BG3T: real Taito K91X0951A board ID (from the F22 EPROM dump)
-	else if (IsTouchPanelGame())
-		CurrentBoardID = FCB_JPN_TOUCHPANEL;
+	else if (std::ranges::find(s_touch_games, gameid) != std::ranges::end(s_touch_games))
+		CurrentBoardID = FCB_JPN_TOUCHPANEL; // touch games use the V290 FCB PCB
 	else
 		CurrentBoardID = RAYS_PCB;
 }
@@ -723,6 +728,20 @@ void ACJV::SetGunRelativeAim(u32 player, float dx, float dy)
 	if (player < JVS_PLAYER_COUNT) { s_gunRelativeDX[player] = dx; s_gunRelativeDY[player] = dy; }
 }
 
+// Namco camera-gun geometry, measured in the VPNGAME binary (GunMgrClass::adjustVal_cz):
+// the visible picture spans +-230x+-140 of a +-320x+-224 acceptance window, so the picture
+// maps to the middle 71.875%/62.5% of the reported range. The ring around it is the
+// aim-beside-the-screen area, and the board reports 0xFFFF/0xFFFF when the camera loses
+// the screen entirely.
+static constexpr float GUN_CAM_VISIBLE_X = 230.0f / 320.0f;
+static constexpr float GUN_CAM_VISIBLE_Y = 140.0f / 224.0f;
+static u16 s_gunRawX[JVS_PLAYER_COUNT] = {0xFFFF, 0xFFFF};
+static u16 s_gunRawY[JVS_PLAYER_COUNT] = {0xFFFF, 0xFFFF};
+static bool s_gunForceOff = false;
+void ACJV::SetGunForceOffscreen(bool held) { s_gunForceOff = held; }
+static float s_gunContour = 0.01f;
+void ACJV::SetGunOffscreenContour(float fraction) { s_gunContour = std::clamp(fraction, 0.0f, 0.05f); }
+
 static void UpdateLightgunFromMouse()
 {
 	float mdx, mdy;
@@ -731,10 +750,70 @@ static void UpdateLightgunFromMouse()
 
 	constexpr float edge_margin = 0.01f;
 	const auto& gm = ACJV::GetGunMapping();
+	const bool camera = (gm.board == GunBoardModel::CameraVN);
+	const bool side_switch = (gm.board == GunBoardModel::SideSwitchTC4);
+	const bool two_tier = (gm.board == GunBoardModel::TwoTierTC3);
+	const bool unclamped = camera || side_switch || two_tier;
+	float udx = -1.0f, udy = -1.0f;
+	if (unclamped)
+		GSTranslateWindowToDisplayCoordinatesUnclamped(mx, my, &udx, &udy);
 	for (u32 p = 0; p < JVS_PLAYER_COUNT; p++)
 	{
-		const float dx = s_gunAimJoystick[p] ? s_gunRelativeDX[p] : mdx;
-		const float dy = s_gunAimJoystick[p] ? s_gunRelativeDY[p] : mdy;
+		const float dx = s_gunAimJoystick[p] ? s_gunRelativeDX[p] : (unclamped ? udx : mdx);
+		const float dy = s_gunAimJoystick[p] ? s_gunRelativeDY[p] : (unclamped ? udy : mdy);
+		if (camera)
+		{
+			const float fx = 0.5f + (dx - 0.5f) * GUN_CAM_VISIBLE_X;
+			const float fy = 0.5f + (0.5f - dy) * GUN_CAM_VISIBLE_Y; //reported Y is bottom-up
+			// Workaround for the PCSX2 pointer limitation: the outer band of the picture counts as
+			// aiming beside the screen, so the native reload (invalid position -> reloadExe) stays reachable.
+			const float contour = s_gunContour;
+			const bool in_aim_area = (dx >= contour && dx <= 1.0f - contour && dy >= contour && dy <= 1.0f - contour);
+			const bool lost = s_gunForceOff || !in_aim_area || (fx < 0.0f || fx > 1.0f || fy < 0.0f || fy > 1.0f);
+			s_gunRawX[p] = lost ? 0xFFFF : static_cast<u16>(std::clamp(fx * 65535.0f, 1.0f, 65534.0f));
+			s_gunRawY[p] = lost ? 0xFFFF : static_cast<u16>(std::clamp(fy * 65535.0f, 1.0f, 65534.0f));
+			if (s_gunRawX[p] == 0x7FFF) s_gunRawX[p] = 0x7FFE; //0x7FFF is skipped by the game's adjust sampler
+			if (s_gunRawY[p] == 0x7FFF) s_gunRawY[p] = 0x7FFE;
+			if (gm.sensor) //the camera still sees the screen from the overscan ring
+				ACJV::SetButtonState(p, gm.sensor, gm.sensor_active_high ? !lost : lost);
+			continue;
+		}
+		if (two_tier)
+		{
+			// TC3's two offscreen tiers (TC3LOAD FUN_0019c800): a coord past [0,640]x[0,448] = yellow
+			// reload, the 0xFFFF/0xFFFF sentinel = red gun-lost.
+			const float overshoot = std::max({0.0f, -dx, dx - 1.0f, -dy, dy - 1.0f});
+			constexpr float LOST = 0.35f; // empirical guess, not real value
+			if (overshoot > LOST)
+			{
+				s_gunRawX[p] = 0xFFFF;
+				s_gunRawY[p] = 0xFFFF;
+			}
+			else
+			{
+				const int px = static_cast<int>(std::lround(dx * 640.0f));
+				const int py = static_cast<int>(std::lround((1.0f - dy) * 448.0f)); //reported Y is bottom-up, native 0..448
+				s_gunRawX[p] = static_cast<u16>(static_cast<s16>(std::clamp(px, -32767, 32767)));
+				s_gunRawY[p] = static_cast<u16>(static_cast<s16>(std::clamp(py, -32767, 32767)));
+			}
+			continue;
+		}
+		if (side_switch)
+		{
+			// TSS-I/O reports the gun position clamped to its field edge plus a separate offscreen
+			// flag; it never zeroes the coordinate (verified in TC4LOAD's JVS parse), so aiming past
+			// a side still tells the game which way to switch screens.
+			const float cx = std::clamp(dx, 0.0f, 1.0f);
+			const float cy = std::clamp(dy, 0.0f, 1.0f);
+			const bool inside = (dx >= 0.0f && dy >= 0.0f && dx <= 1.0f && dy <= 1.0f);
+			m_jvsScreenPosX[p] = static_cast<u16>((1.0f - cx) * 0xFFFF);
+			m_jvsScreenPosY[p] = static_cast<u16>(cy * 0xFFFF);
+			m_jvsLightgunDX[p] = inside ? dx : -1.0f;
+			m_jvsLightgunDY[p] = inside ? dy : -1.0f;
+			if (gm.sensor)
+				ACJV::SetButtonState(p, gm.sensor, gm.sensor_active_high ? inside : !inside);
+			continue;
+		}
 		const bool on_screen = (dx >= 0.0f && dy >= 0.0f && dx < (1.0f - edge_margin) && dy < (1.0f - edge_margin));
 		if (on_screen)
 		{
@@ -755,31 +834,68 @@ static void UpdateLightgunFromMouse()
 	}
 }
 
-static void UpdateTouchFromMouse()
+static bool m_touchPressed = false;
+static bool m_touchPressBound = false;
+static bool m_touchRelActive = false;
+static float m_touchRel[4] = {}; // Left/Right/Up/Down stick deflection
+static std::string m_touchCursorPath;
+
+void ACJV::SetTouchPressed(bool pressed) { m_touchPressed = pressed; }
+void ACJV::SetTouchPressBound(bool bound) { m_touchPressBound = bound; }
+void ACJV::SetTouchRelativeAxis(u32 axis, float value) { if (axis < std::size(m_touchRel)) m_touchRel[axis] = value; }
+void ACJV::SetTouchRelativeActive(bool active) { m_touchRelActive = active; }
+
+// Relative aim draws on its own software-cursor slot (past the guns' MAX+port slots); the mouse shares slot 0.
+static u32 TouchPointerIndex() { return m_touchRelActive ? (InputManager::MAX_POINTER_DEVICES + 2) : 0; }
+
+void ACJV::SetTouchCursor(std::string path, float scale, u32 color)
 {
-	if (!InputManager::GetPointerButtonState(0, 0))
+	static bool s_shown = false;
+	static u32 s_prev_index = 0;
+	const bool want = (ACJV::GetMode() == JVS_MODE::TOUCH) && !path.empty();
+	const u32 index = TouchPointerIndex();
+	if (s_shown && (!want || s_prev_index != index))
+		ImGuiManager::ClearSoftwareCursor(s_prev_index);
+	m_touchCursorPath = want ? path : std::string();
+	if (want)
+		ImGuiManager::SetSoftwareCursor(index, std::move(path), scale, color);
+	s_shown = want;
+	s_prev_index = index;
+}
+
+// Touch panel pointer: the mouse, or a controller stick via the relative-aim binds (stick deflection maps to
+// the whole screen, like the lightgun relative aim). Touching = the TouchPress bind, or left click when unbound.
+// FCB reports X=Y=0xFFFF when the panel isn't touched.
+static void UpdateTouchFromPointer()
+{
+	float wx, wy;
+	if (m_touchRelActive)
+	{
+		wx = (((m_touchRel[1] > 0.0f) ? m_touchRel[1] : -m_touchRel[0]) + 1.0f) * 0.5f * ImGuiManager::GetWindowWidth();
+		wy = (((m_touchRel[3] > 0.0f) ? m_touchRel[3] : -m_touchRel[2]) + 1.0f) * 0.5f * ImGuiManager::GetWindowHeight();
+	}
+	else
+	{
+		const auto& [mx, my] = InputManager::GetPointerAbsolutePosition(0);
+		wx = mx;
+		wy = my;
+	}
+	if (!m_touchCursorPath.empty())
+		ImGuiManager::SetSoftwareCursorPosition(TouchPointerIndex(), wx, wy);
+
+	const bool pressed = m_touchPressBound ? m_touchPressed : InputManager::IsPointerButtonDown(0, 0);
+	if (!pressed)
 	{
 		m_jvsScreenPosX[0] = 0xFFFF;
 		m_jvsScreenPosY[0] = 0xFFFF;
 		return;
 	}
-
-	const auto& [mx, my] = InputManager::GetPointerAbsolutePosition(0);
-	float dx, dy;
-	GSTranslateWindowToDisplayCoordinates(mx, my, &dx, &dy);
-	constexpr float edge_margin = 0.01f;
-	if (dx >= 0.0f && dy >= 0.0f && dx < (1.0f - edge_margin) && dy < (1.0f - edge_margin))
-	{
-		m_jvsScreenPosX[0] = static_cast<u16>(std::clamp(dx, 0.0f, 1.0f) * 0xFFFF);
-		m_jvsScreenPosY[0] = static_cast<u16>((1.0f - std::clamp(dy, 0.0f, 1.0f)) * 0xFFFF);
-		if (m_jvsScreenPosX[0] == 0) m_jvsScreenPosX[0] = 1;
-		if (m_jvsScreenPosY[0] == 0) m_jvsScreenPosY[0] = 1;
-	}
-	else
-	{
-		m_jvsScreenPosX[0] = 0xFFFF;
-		m_jvsScreenPosY[0] = 0xFFFF;
-	}
+	float mdx, mdy;
+	GSTranslateWindowToDisplayCoordinates(wx, wy, &mdx, &mdy);
+	const float cx = (mdx < 0.0f) ? 0.0f : (mdx > 1.0f ? 1.0f : mdx);
+	const float cy = (mdy < 0.0f) ? 0.0f : (mdy > 1.0f ? 1.0f : mdy);
+	m_jvsScreenPosX[0] = std::min<u16>(static_cast<u16>(cx * 0xFFFF), 0xFFFE);
+	m_jvsScreenPosY[0] = std::min<u16>(static_cast<u16>((1.0f - cy) * 0xFFFF), 0xFFFE); // FCB Y axis is bottom-up
 }
 
 // Combine host axes into the 3 JVS analog channels (steer/gas/brake). Steering encoding is per-game.
@@ -1111,7 +1227,7 @@ void do_jvs_packet(const u8* input, u8* output) {
 			if(m_jvsMode == JVS_MODE::LIGHTGUN)
 				UpdateLightgunFromMouse();
 			else if(m_jvsMode == JVS_MODE::TOUCH)
-				UpdateTouchFromMouse();
+				UpdateTouchFromPointer();
 
 			(*output++) = JVS_CMD_SUCCESS;
 
@@ -1123,7 +1239,18 @@ void do_jvs_packet(const u8* input, u8* output) {
 			// frame), so return that one gun's player position - gun 1 -> P1, gun 2 -> P2.
 			const u32 pl = (channel >= 1 && channel <= JVS_PLAYER_COUNT) ? (channel - 1u) : 0u;
 			u16 posX = 0, posY = 0;
-			if(m_jvsMode == JVS_MODE::LIGHTGUN && m_jvsLightgunDX[pl] >= 0.0f)
+			const GunBoardModel board = ACJV::GetGunMapping().board;
+			if(m_jvsMode == JVS_MODE::TOUCH)
+			{
+				posX = m_jvsScreenPosX[0];
+				posY = m_jvsScreenPosY[0];
+			}
+			else if(m_jvsMode == JVS_MODE::LIGHTGUN && (board == GunBoardModel::CameraVN || board == GunBoardModel::TwoTierTC3))
+			{ //values built straight in UpdateLightgunFromMouse (0xFFFF/0xFFFF = camera lost / fully off)
+				posX = s_gunRawX[pl];
+				posY = s_gunRawY[pl];
+			}
+			else if(m_jvsMode == JVS_MODE::LIGHTGUN && m_jvsLightgunDX[pl] >= 0.0f)
 			{
 				const float scaleX = (ACJV::CurrentBoardID == MIU_IO_JPN_GUN_EXTENTI) ? 640.0f : 0xFFFF;
 				const float scaleY = (ACJV::CurrentBoardID == MIU_IO_JPN_GUN_EXTENTI) ? 224.0f : 0xFFFF;
@@ -1134,11 +1261,6 @@ void do_jvs_packet(const u8* input, u8* output) {
 					posY = static_cast<u16>(m_jvsLightgunDY[pl] * scaleY);
 				if (posX == 0) posX = 1;
 				if (posY == 0) posY = 1;
-			}
-			else if(m_jvsMode == JVS_MODE::TOUCH)
-			{
-				posX = m_jvsScreenPosX[0];
-				posY = m_jvsScreenPosY[0];
 			}
 			(*output++) = static_cast<u8>(posX >> 8);
 			(*output++) = static_cast<u8>(posX);
@@ -1179,6 +1301,51 @@ void do_jvs_packet(const u8* input, u8* output) {
 			(*dstSize) += 1;
 		}
 		break;
+		// Namco vendor command 0x70. Two dialects share it: the FCB touch panel sends a sub-command
+		// plus args (0x60 status = 1, 0x62 touch init = 2, 0x18 boot config = 4) and waits on an echo
+		// with report 0x01; the Sys246gun camera board (VN) sends adjust-control sub 0x40 and its
+		// n246JvioNamcoGun* parsers expect report, 0xFF marker, length, then payload[2] = 1 (complete).
+		case JVS::NAMCO_VENDOR:
+		{
+			JVS_ASSERT(inSize != 0);
+			u8 sub = (*input++);
+			inWorkChecksum += sub;
+			inSize--;
+
+			if (ACJV::GetGunMapping().board == GunBoardModel::CameraVN)
+			{
+				while (inSize != 0)
+				{
+					u8 data = (*input++);
+					inWorkChecksum += data;
+					inSize--;
+				}
+				(*output++) = JVS_CMD_SUCCESS;
+				(*output++) = 0xFF;
+				(*output++) = 0x04; //payload length
+				(*output++) = sub;
+				(*output++) = 0x00;
+				(*output++) = 0x01; //payload[2]: adjust complete (the real board reports busy first; ours finishes instantly)
+				(*output++) = 0x00;
+				(*dstSize) += 7;
+			}
+			else
+			{
+				u8 args = (sub == 0x60) ? 1 : (sub == 0x62) ? 2 : (sub == 0x18) ? 4 : inSize;
+				for(u8 i = 0; i < args && inSize != 0; i++)
+				{
+					u8 data = (*input++);
+					inWorkChecksum += data;
+					inSize--;
+				}
+				(*output++) = JVS_CMD_SUCCESS;
+				(*output++) = 0x02; //payload length
+				(*output++) = sub;  //sub-command echo
+				(*output++) = 0x01; //status: ready
+				(*dstSize) += 4;
+			}
+		}
+		break;
 		default:
 			//Unknown command
 			// Console.Error("ACJV::%s: unknown JVS CMD 0x%X", __FUNCTION__, cmd);
@@ -1211,7 +1378,7 @@ void do_acjv_packet() {
 		rd16[1]      = JvFirmwareVersion();
 		rd16[0x14]   = RootPacketID; // Xored with value at 0x10 in send packet, needs to be the same
 		rd16[0x21]   = wr16[0x0D];
-		rd16[0x30]  = s_dip_switch_state; // here the game polls the dip switch values?
+		rdbuf[0x30]  = s_dip_switch_state; // here the game polls the dip switch values?
 		static u8 s_acFrameSeq = 0;
 		rdbuf[0x57] = ++s_acFrameSeq; // game waits on this byte advancing each frame to finalize a coin decrement
 		u16 PacketID = wr16[0x0C];

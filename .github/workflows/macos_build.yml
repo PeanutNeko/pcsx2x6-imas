@@ -25,6 +25,10 @@ on:
         required: false
         type: boolean
         default: false
+      versionTag:
+        required: false
+        type: string
+        default: ""
       stableBuild:
         required: false
         type: boolean
@@ -53,6 +57,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       # actions/checkout elides tags, fetch them primarily for releases
       - name: Fetch Tags
@@ -130,6 +137,7 @@ jobs:
         run: |
           cmake -DCMAKE_PREFIX_PATH="$HOME/deps" \
                 -DCMAKE_BUILD_TYPE=Release \
+                -DPCSX2_FORCED_GIT_TAG="${{ inputs.versionTag }}" \
                 -DCMAKE_OSX_ARCHITECTURES="${{ case(inputs.arch == 'x86-64', 'x86_64', inputs.arch) }}" \
                 -DDISABLE_ADVANCE_SIMD=ON \
                 -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${{ case(inputs.arch == 'x86-64', 'ON', 'OFF') }} \

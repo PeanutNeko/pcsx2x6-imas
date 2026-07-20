@@ -73,10 +73,18 @@ enum class StandardLayout {
 	SMASHCOURT,  // NM00006: Smash Court Pro (2 buttons)
 	TECHNICBEAT, // NM10003: Technic Beat (3 buttons)
 	GUNDAMQUIZ,  // NM00030: Gundam Quiz Warrior (4-button Gundam wiring)
+	INUFUKU,     // NM00037: Quiz Inufuku 2 (answer buttons 1-4 on the directional bits)
 };
 
 #define JVS_WHEEL_CHANNEL_MAX 3
 #define JVS_DRUM_CHANNEL_MAX 8
+
+enum class GunBoardModel : u8 {
+    Classic,        // (0,0) when off-screen, sensor bit only
+    CameraVN,       // Sys246gun camera (VN): 0xFFFF/0xFFFF = camera lost, 5-point calibration frame
+    SideSwitchTC4,  // TSS-I/O (TC4): coords clamp to the field edge (never zeroed), off-screen flag separate
+    TwoTierTC3,     // TSS-I/O (TC3): coord past [0,640]x[0,448] = yellow reload; 0xFFFF/0xFFFF = red fully-lost
+};
 
 struct GunMapping {
     u16 pedal;
@@ -86,6 +94,7 @@ struct GunMapping {
     u16 p2_start;
     u16 p1_trigger;
     u16 p2_trigger;
+    GunBoardModel board;
 };
 
 namespace ACJV {
@@ -112,6 +121,11 @@ namespace ACJV {
     u16 Read16(u32 addr);
     void Write16(u32 addr, u16 val);
     void UpdateFcaFrame(); // Ridge Racer V: refresh the FCA-1 I/O board's input buffer every frame (steering/pedals/buttons)
+    void SetTouchPressed(bool pressed);
+    void SetTouchPressBound(bool bound);
+    void SetTouchRelativeAxis(u32 axis, float value); // 0..3 = Left/Right/Up/Down stick deflection
+    void SetTouchRelativeActive(bool active);
+    void SetTouchCursor(std::string path, float scale, u32 color);
     void OnBoardStart();   // set the JVS I/O board firmware version at power-on (Battle Gear 3 Tuned reads it before its first command)
     extern enum BOARDID CurrentBoardID;
 
@@ -166,6 +180,8 @@ namespace ACJV {
     void SetScreenPos(u16 x, u16 y);
     void SetGunAimSource(u32 player, bool joystick);        // lightgun aim source: false = shared mouse, true = player's stick
     void SetGunRelativeAim(u32 player, float dx, float dy); // player's stick-driven screen position from the GunCon2 (display coords)
+    void SetGunForceOffscreen(bool held);                   // force the camera-lost report (the pedal bind = manual reload on Vampire Night)
+    void SetGunOffscreenContour(float fraction);            // width of the aim-beside-the-screen band at the window edge (0..0.05)
     void SetGameId(const std::string& gameid);
     const std::string& GetGameId();
     const GunMapping& GetGunMapping();
@@ -209,6 +225,7 @@ enum JVS { //https://github.com/TheOnlyJoey/openjvs/wiki/Command-list
     OUTPUT_GENERAL_PURPOSE3 = 0x38, //general-purpose output 3
     /// Manufacturer-specific
     //60-7F	 	reserved for manufacturer-specific commands
+    NAMCO_VENDOR = 0x70, //Namco extended command: sub-command + args (FCB touch panel init/status)
 };
 
 enum COINCOND { // Coin Slot condition
