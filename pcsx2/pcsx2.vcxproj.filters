@@ -602,9 +602,12 @@
     <ClCompile Include="R5900OpcodeImpl.cpp">
       <Filter>System\Ps2\EmotionEngine\EE\Interpreter</Filter>
     </ClCompile>
-    <ClCompile Include="IopBios.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
+	<ClCompile Include="IopBios.cpp">
+	  <Filter>System\Ps2\Iop</Filter>
+	</ClCompile>
+	<ClCompile Include="ImasCardReader.cpp">
+	  <Filter>System\Ps2\Iop</Filter>
+	</ClCompile>
     <ClCompile Include="IopCounters.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
@@ -887,9 +890,12 @@
     <ClCompile Include="DEV9\ACATAPI.cpp">
       <Filter>System\Ps2\ACMMIO</Filter>
     </ClCompile>
-    <ClCompile Include="DEV9\ACJV.cpp">
-      <Filter>System\Ps2\ACMMIO</Filter>
-    </ClCompile>
+	<ClCompile Include="DEV9\ACJV.cpp">
+	  <Filter>System\Ps2\ACMMIO</Filter>
+	</ClCompile>
+	<ClCompile Include="DEV9\ImasJVS.cpp">
+	  <Filter>System\Ps2\ACMMIO</Filter>
+	</ClCompile>
     <ClCompile Include="DEV9\ACUART.cpp">
       <Filter>System\Ps2\ACMMIO</Filter>
     </ClCompile>
@@ -1349,6 +1355,9 @@
     <ClCompile Include="Input\XInputSource.cpp">
       <Filter>Misc\Input</Filter>
     </ClCompile>
+    <ClCompile Include="Input\RawInputSource.cpp">
+      <Filter>Misc\Input</Filter>
+    </ClCompile>
     <ClCompile Include="Host.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -1622,9 +1631,12 @@
     <ClInclude Include="x86\iR5900Shift.h">
       <Filter>System\Ps2\EmotionEngine\EE\Dynarec</Filter>
     </ClInclude>
-    <ClInclude Include="IopBios.h">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClInclude>
+	<ClInclude Include="IopBios.h">
+	  <Filter>System\Ps2\Iop</Filter>
+	</ClInclude>
+	<ClInclude Include="ImasCardReader.h">
+	  <Filter>System\Ps2\Iop</Filter>
+	</ClInclude>
     <ClInclude Include="IopCounters.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
@@ -1792,6 +1804,9 @@
     </ClInclude>
     <ClInclude Include="DEV9\DEV9.h">
       <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ImasJVS.h">
+      <Filter>System\Ps2\ACMMIO</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\InternalServers\DHCP_Logger.h">
       <Filter>System\Ps2\DEV9\InternalServers</Filter>
@@ -2311,6 +2326,9 @@
       <Filter>Misc\Input</Filter>
     </ClInclude>
     <ClInclude Include="Input\XInputSource.h">
+      <Filter>Misc\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\RawInputSource.h">
       <Filter>Misc\Input</Filter>
     </ClInclude>
     <ClInclude Include="Host.h">

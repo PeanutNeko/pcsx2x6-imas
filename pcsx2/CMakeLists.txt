@@ -79,6 +79,7 @@ set(pcsx2Sources
 	LayeredSettingsInterface.cpp
 	INISettingsInterface.cpp
 	Interpreter.cpp
+	ImasCardReader.cpp
 	IopBios.cpp
 	IopCounters.cpp
 	IopDma.cpp
@@ -160,6 +161,7 @@ set(pcsx2Headers
 	Host.h
 	Hw.h
 	INISettingsInterface.h
+	ImasCardReader.h
 	IopBios.h
 	IopCounters.h
 	IopDma.h
@@ -326,6 +328,7 @@ set(pcsx2DEV9Sources
 	DEV9/ACATA_IO_CHD.cpp
 	DEV9/ACATAPI.cpp
 	DEV9/ACJV.cpp
+	DEV9/ImasJVS.cpp
 	DEV9/ACUART.cpp
 	DEV9/ACCORE.cpp
 	)
@@ -336,6 +339,7 @@ set(pcsx2DEV9Headers
 	DEV9/ATA/ATA.h
 	DEV9/ATA/HddCreate.h
 	DEV9/DEV9.h
+	DEV9/ImasJVS.h
 	DEV9/InternalServers/DHCP_Logger.h
 	DEV9/InternalServers/DHCP_Server.h
 	DEV9/InternalServers/DNS_Logger.h
@@ -899,10 +903,12 @@ if(WIN32)
 	list(APPEND pcsx2InputSources
 		Input/DInputSource.cpp
 		Input/XInputSource.cpp
+		Input/RawInputSource.cpp
 	)
 	list(APPEND pcsx2InputHeaders
 		Input/DInputSource.h
 		Input/XInputSource.h
+		Input/RawInputSource.h
 	)
 endif()
 
@@ -910,6 +916,7 @@ endif()
 set(pcsx2LinuxSources
 	CDVD/Linux/DriveUtility.cpp
 	CDVD/Linux/IOCtlSrc.cpp
+	Input/EvdevInputSource.cpp
 	)
 
 set(pcsx2OSXSources
@@ -924,6 +931,7 @@ set(pcsx2FreeBSDSources
 
 # Linux headers
 set(pcsx2LinuxHeaders
+	Input/EvdevInputSource.h
 	)
 
 # ps2 sources

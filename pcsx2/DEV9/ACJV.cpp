@@ -2,6 +2,7 @@
 #include "ACMACROS.h"
 #include "ACJV.h"
 #include "ACUART.h"
+#include "DEV9/ImasJVS.h"
 #include "Config.h"
 #include "Host.h"
 #include "Input/InputManager.h"
@@ -11,8 +12,6 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
-#include <chrono>
-#include <ranges>
 #include <string>
 
 enum ACJVCMD {
@@ -72,6 +71,7 @@ static bool s_suppress_daemon = true;
 static std::atomic<bool> s_sinden_border_enabled{false};
 static std::atomic<int> s_sinden_border_mode{0};
 static std::atomic<int> s_sinden_border_thickness{10};
+static std::atomic<bool> s_lightgun_link_2p{false};
 static std::string s_gameid;
 
 std::span<const ACJV::DIPSwitchInfo> ACJV::GetDIPSwitches()
@@ -250,6 +250,7 @@ void ACJV::LoadConfig(const SettingsInterface& si)
 	s_sinden_border_enabled = si.GetBoolValue(CONFIG_SECTION, "SindenBorderEnabled", false);
 	s_sinden_border_mode = si.GetIntValue(CONFIG_SECTION, "SindenBorderMode", 0);
 	s_sinden_border_thickness = si.GetIntValue(CONFIG_SECTION, "SindenBorderThickness", 10);
+	s_lightgun_link_2p = si.GetBoolValue(CONFIG_SECTION, "LightgunLinkAs2P", false);
 }
 
 void ACJV::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si, bool copy_settings, bool copy_bindings)
@@ -266,6 +267,7 @@ void ACJV::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface
 		dest_si->CopyFloatValue(src_si, CONFIG_SECTION, "AnalogSensitivity");
 		dest_si->CopyFloatValue(src_si, CONFIG_SECTION, "TriggerDeadzone");
 		dest_si->CopyBoolValue(src_si, CONFIG_SECTION, "InvertSteering");
+		dest_si->CopyBoolValue(src_si, CONFIG_SECTION, "LightgunLinkAs2P");
 	}
 
 	if (copy_bindings)
@@ -366,10 +368,6 @@ static float m_jvsLightgunDX[JVS_PLAYER_COUNT] = {-1.0f, -1.0f};  // per-player 
 static float m_jvsLightgunDY[JVS_PLAYER_COUNT] = {-1.0f, -1.0f};  // per-player normalized display Y (-1 = off-screen)
 static u16 m_jvsWheelChannels[JVS_WHEEL_CHANNEL_MAX] = {};
 static u16 m_jvsDrumChannels[JVS_DRUM_CHANNEL_MAX] = {};
-static bool s_imasLeft = true;
-static bool s_imasRight = false;
-static bool s_imasButton2 = false;
-static u64 s_imasBeginTime = 0;
 
 static float m_wheelSteerR = 0.0f; // stick right  -> steering positive
 static float m_wheelSteerL = 0.0f; // stick left   -> steering negative
@@ -377,14 +375,15 @@ static float m_wheelGas    = 0.0f; // right trigger (R2)
 static float m_wheelBrake  = 0.0f; // left trigger  (L2)
 
 // Per-game JVS button mapping for lightgun games, keyed by NM game ID (see issue #9).
-// Field order: pedal, sensor, sensor_active_high, p1_start, p2_start, p1_trigger, p2_trigger, board
+// Field order: pedal, sensor, sensor_active_high, p1_start, p2_start, p1_trigger, p2_trigger, board, link_2p
 // Each button value is a JVS bit from JVSButton enum. 0 = not used for this game.
+// link_2p: "LINK AS" cabinet side switch bit the game polls (TC3 reads Push3 as MIU-I/O, TC4 reads Push4).
 static const GunMapping s_default_gun_mapping = {JVS_BTN_3, JVS_BTN_RIGHT, false, 0, 0, JVS_BTN_2, 0, GunBoardModel::Classic};
 static const std::map<std::string, GunMapping> s_gun_mappings = {
 	{"NM00003", {0,            0x200,         true,  JVS_BTN_3,  JVS_BTN_6, JVS_BTN_2,    JVS_BTN_5, GunBoardModel::CameraVN}},      // Vampire Night
-	{"NM00012", {JVS_BTN_6,    0,             false, 0,          0,          JVS_BTN_2,    0,         GunBoardModel::TwoTierTC3}},     // Time Crisis 3
+	{"NM00012", {JVS_BTN_6,    0,             false, 0,          0,          JVS_BTN_2,    0,         GunBoardModel::TwoTierTC3, JVS_BTN_3}},    // Time Crisis 3
 	{"NM00021", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0,         GunBoardModel::Classic}},       // Cobra The Arcade
-	{"NM00032", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0,         GunBoardModel::SideSwitchTC4}}, // Time Crisis 4
+	{"NM00032", {JVS_BTN_3,    JVS_BTN_RIGHT, false, 0,          0,          JVS_BTN_LEFT, 0,         GunBoardModel::SideSwitchTC4, JVS_BTN_4}}, // Time Crisis 4
 };
 static const GunMapping* m_gunMapping = &s_default_gun_mapping;
 
@@ -525,46 +524,6 @@ std::span<const ACJV::RacingLayoutInfo> ACJV::GetRacingLayouts()
 	return s_racing_layout_ui;
 }
 
-static bool IsImas()
-{
-	return s_gameid == "NM00022";
-}
-
-static u64 GetMilliseconds()
-{
-	return static_cast<u64>(std::chrono::duration_cast<std::chrono::milliseconds>(
-		std::chrono::steady_clock::now().time_since_epoch()).count());
-}
-
-static void UpdateImas(u8 gpvalue)
-{
-	const u64 now = GetMilliseconds();
-	if (gpvalue & 0x10)
-	{
-		const u64 delta = now - s_imasBeginTime;
-		const u64 phase = delta % 6000;
-		s_imasLeft = phase < 1000;
-		s_imasButton2 = phase > 2000 && phase < 5000;
-		s_imasRight = phase > 3000 && phase < 4000;
-	}
-	else
-	{
-		s_imasBeginTime = now;
-		s_imasLeft = true;
-		s_imasRight = false;
-		s_imasButton2 = false;
-	}
-}
-
-static u16 GetImasButtonState()
-{
-	u16 buttons = m_jvsButtonState[0];
-	buttons = s_imasButton2 ? (buttons | JVS_BTN_2) : (buttons & static_cast<u16>(~JVS_BTN_2));
-	buttons = s_imasLeft ? (buttons | JVS_BTN_LEFT) : (buttons & static_cast<u16>(~JVS_BTN_LEFT));
-	buttons = s_imasRight ? (buttons | JVS_BTN_RIGHT) : (buttons & static_cast<u16>(~JVS_BTN_RIGHT));
-	return buttons;
-}
-
 // Gamepad input -> JVS button state: set or clear a button bit for a player
 void ACJV::SetButtonState(u32 player, u16 mask, bool pressed)
 {
@@ -657,6 +616,7 @@ const std::string& ACJV::GetGameId() { return s_gameid; }
 void ACJV::SetGameId(const std::string& gameid)
 {
 	s_gameid = gameid;
+	ImasJVS::SetActive(gameid == "NM00022");
 	// Clean slate: zero all input state on game switch within the emulator
 	ACUART::ResetBg3State(); // re-arm the BG3 acuart HANDLE handshake so a game RESET boots cleanly (no HANDLE ERROR)
 	ACJV::coin[0] = 0;
@@ -672,10 +632,6 @@ void ACJV::SetGameId(const std::string& gameid)
 		m_jvsLightgunDX[p] = -1.0f;
 		m_jvsLightgunDY[p] = -1.0f;
 	}
-	s_imasLeft = true;
-	s_imasRight = false;
-	s_imasButton2 = false;
-	s_imasBeginTime = GetMilliseconds();
 	std::memset(m_jvsWheelChannels, 0, sizeof(m_jvsWheelChannels));
 	std::memset(m_jvsDrumChannels, 0, sizeof(m_jvsDrumChannels));
 	for (u32 p = 0; p < JVS_PLAYER_COUNT; p++) // clear macro state; InputManager repushes masks on the input reload
@@ -720,9 +676,15 @@ const GunMapping& ACJV::GetGunMapping()
 // Per-player lightgun aim source: shared mouse by default, or the player's own controller stick when its
 // Aim Device is set to the pad (GunCon2 has_relative_binds pushes that stick's screen pos here).
 static bool s_gunAimJoystick[JVS_PLAYER_COUNT] = {};
+static u32 s_gunPointerIndex[JVS_PLAYER_COUNT] = {};
 static float s_gunRelativeDX[JVS_PLAYER_COUNT] = {-1.0f, -1.0f};
 static float s_gunRelativeDY[JVS_PLAYER_COUNT] = {-1.0f, -1.0f};
 void ACJV::SetGunAimSource(u32 player, bool joystick) { if (player < JVS_PLAYER_COUNT) s_gunAimJoystick[player] = joystick; }
+void ACJV::SetGunPointerIndex(u32 player, u32 index)
+{
+	if (player < JVS_PLAYER_COUNT && index < InputManager::MAX_POINTER_DEVICES)
+		s_gunPointerIndex[player] = index;
+}
 void ACJV::SetGunRelativeAim(u32 player, float dx, float dy)
 {
 	if (player < JVS_PLAYER_COUNT) { s_gunRelativeDX[player] = dx; s_gunRelativeDY[player] = dy; }
@@ -744,21 +706,20 @@ void ACJV::SetGunOffscreenContour(float fraction) { s_gunContour = std::clamp(fr
 
 static void UpdateLightgunFromMouse()
 {
-	float mdx, mdy;
-	const auto& [mx, my] = InputManager::GetPointerAbsolutePosition(0);
-	GSTranslateWindowToDisplayCoordinates(mx, my, &mdx, &mdy);
-
 	constexpr float edge_margin = 0.01f;
 	const auto& gm = ACJV::GetGunMapping();
 	const bool camera = (gm.board == GunBoardModel::CameraVN);
 	const bool side_switch = (gm.board == GunBoardModel::SideSwitchTC4);
 	const bool two_tier = (gm.board == GunBoardModel::TwoTierTC3);
 	const bool unclamped = camera || side_switch || two_tier;
-	float udx = -1.0f, udy = -1.0f;
-	if (unclamped)
-		GSTranslateWindowToDisplayCoordinatesUnclamped(mx, my, &udx, &udy);
+	const bool raw_input = InputManager::IsUsingRawInput();
 	for (u32 p = 0; p < JVS_PLAYER_COUNT; p++)
 	{
+		float mdx = -1.0f, mdy = -1.0f, udx = -1.0f, udy = -1.0f;
+		const auto& [mx, my] = InputManager::GetPointerAbsolutePosition(raw_input ? s_gunPointerIndex[p] : 0);
+		GSTranslateWindowToDisplayCoordinates(mx, my, &mdx, &mdy);
+		if (unclamped)
+			GSTranslateWindowToDisplayCoordinatesUnclamped(mx, my, &udx, &udy);
 		const float dx = s_gunAimJoystick[p] ? s_gunRelativeDX[p] : (unclamped ? udx : mdx);
 		const float dy = s_gunAimJoystick[p] ? s_gunRelativeDY[p] : (unclamped ? udy : mdy);
 		if (camera)
@@ -1044,15 +1005,7 @@ void do_jvs_packet(const u8* input, u8* output) {
 				(*output++) = 0x10; //X pos bits
 				(*output++) = 0x10; //Y pos bits
 				(*output++) = 0x01; //channels
-
-				if (IsImas())
-				{
-					(*output++) = 0x12; //GPIO output
-					(*output++) = 0x06; //slot count
-					(*output++) = 0x00;
-					(*output++) = 0x00;
-					(*dstSize) += 4;
-				}
+				ImasJVS::AppendFeatures(output, dstSize);
 
 				(*dstSize) += 4;
 			}
@@ -1089,7 +1042,10 @@ void do_jvs_packet(const u8* input, u8* output) {
 			(*output++) = m_testButtonState|(s_dip_switch_state & TESTMODE);
 			//(*output++) = (m_jvsSystemButtonState == 0x03) ? 0x80 : 0;  //Test
 
-			const u16 p1btn = (IsImas() ? GetImasButtonState() : m_jvsButtonState[0]) | m_jvsMacroButtonState[0];
+			u16 p1btn = m_jvsButtonState[0] | m_jvsMacroButtonState[0];
+			p1btn = ImasJVS::ApplyButtonState(p1btn, m_jvsMacroButtonState[0]);
+			if (s_lightgun_link_2p)
+				p1btn |= m_gunMapping->link_2p; // test menu reads it as LINK AS : 2 (RIGHT)
 			(*output++) = static_cast<u8>(p1btn);      //Player 1
 			(*output++) = static_cast<u8>(p1btn >> 8); //Player 1
 			(*dstSize) += 4;
@@ -1286,9 +1242,7 @@ void do_jvs_packet(const u8* input, u8* output) {
 				u8 gpvalue = (*input++);
 				inWorkChecksum += gpvalue;
 				inSize--;
-
-				if (IsImas())
-					UpdateImas(gpvalue);
+				ImasJVS::HandleGeneralOutput(gpvalue);
 
 				if(i == 1)
 				{

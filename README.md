@@ -1,6 +1,6 @@
 # PCSX2x6 imas
 
-This fork adds IDOLM@STER support on top of [PCSX2x6](https://github.com/PS2Homebrew-arcade/pcsx2x6). The current imas branch is based on PCSX2x6 v0.2.11.
+This fork adds IDOLM@STER support on top of [PCSX2x6](https://github.com/PS2Homebrew-arcade/pcsx2x6).
 
 These imas changes are based on the behavior documented and implemented by [Play-imas](https://github.com/moonmagian/Play-imas/tree/imas):
 
@@ -42,15 +42,9 @@ serialpath = \\.\pipe\imas
 
 Start `YaCardEmu.exe` before starting the game.
 
-### Step 3: Check touchscreen JVS mode
+### Step 3: Use the built-in touchscreen mode
 
-Current PCSX2x6 builds detect `NM00022` as a touchscreen game automatically through PCSX2x6's built-in touch panel support. You usually do not need to add a `jvsmode` entry.
-
-If you are using a custom `.acgame` file or a custom game ID, force touchscreen mode with:
-
-```ini
-jvsmode=touchscreen
-```
+PCSX2x6 detects `NM00022` as a touchscreen game automatically through its built-in FCB touch panel support. All you need to do is keep `gameid=NM00022` in the `.acgame` file.
 
 Then start `The iDOLM@STER`.
 

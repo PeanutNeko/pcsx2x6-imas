@@ -176,8 +176,9 @@
     <ClCompile Include="DEV9\ACATA_IO.cpp" />
     <ClCompile Include="DEV9\ACATA_IO_CHD.cpp" />
     <ClCompile Include="DEV9\ACATAPI.cpp" />
-    <ClCompile Include="DEV9\ACJV.cpp" />
-    <ClCompile Include="DEV9\ACUART.cpp" />
+	<ClCompile Include="DEV9\ACJV.cpp" />
+	<ClCompile Include="DEV9\ImasJVS.cpp" />
+	<ClCompile Include="DEV9\ACUART.cpp" />
     <ClCompile Include="DEV9\ACCORE.cpp" />
     <ClCompile Include="DEV9\flash.cpp" />
     <ClCompile Include="DEV9\InternalServers\DHCP_Logger.cpp" />
@@ -285,6 +286,7 @@
     </ClCompile>
     <ClCompile Include="Host.cpp" />
     <ClCompile Include="Input\DInputSource.cpp" />
+    <ClCompile Include="Input\RawInputSource.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\InputSource.cpp" />
     <ClCompile Include="Input\SDLInputSource.cpp" />
@@ -531,7 +533,8 @@
     <ClCompile Include="MMI.cpp" />
     <ClCompile Include="R5900.cpp" />
     <ClCompile Include="R5900OpcodeImpl.cpp" />
-    <ClCompile Include="IopBios.cpp" />
+	<ClCompile Include="IopBios.cpp" />
+	<ClCompile Include="ImasCardReader.cpp" />
     <ClCompile Include="IopCounters.cpp" />
     <ClCompile Include="IopDma.cpp" />
     <ClCompile Include="IopIrq.cpp" />
@@ -620,6 +623,7 @@
     <ClInclude Include="DEV9\ATA\ATA.h" />
     <ClInclude Include="DEV9\ATA\HddCreate.h" />
     <ClInclude Include="DEV9\DEV9.h" />
+    <ClInclude Include="DEV9\ImasJVS.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Logger.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
     <ClInclude Include="DEV9\InternalServers\DNS_Logger.h" />
@@ -731,6 +735,7 @@
     </ClInclude>
     <ClInclude Include="Host.h" />
     <ClInclude Include="Input\DInputSource.h" />
+    <ClInclude Include="Input\RawInputSource.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\InputSource.h" />
     <ClInclude Include="Input\SDLInputSource.h" />
@@ -932,7 +937,8 @@
     <ClInclude Include="x86\iR5900Move.h" />
     <ClInclude Include="x86\iR5900MultDiv.h" />
     <ClInclude Include="x86\iR5900Shift.h" />
-    <ClInclude Include="IopBios.h" />
+	<ClInclude Include="IopBios.h" />
+	<ClInclude Include="ImasCardReader.h" />
     <ClInclude Include="IopCounters.h" />
     <ClInclude Include="IopDma.h" />
     <ClInclude Include="IopMem.h" />
