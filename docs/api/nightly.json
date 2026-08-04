@@ -1,41 +1,41 @@
 {
     "data": [
         {
-            "version": "v0.2.11-imas",
-            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.2.11-imas",
+            "version": "v0.2.20-imas",
+            "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/tag/v0.2.20-imas",
             "semverMajor": 0,
             "semverMinor": 2,
-            "semverPatch": 11,
-            "description": "- DEV9: Update im@s support to PCSX2x6 v0.2.11\n\n- Sync the imas branch with upstream PCSX2x6 v0.2.11.\n- Preserve IDOLM@STER card reader, and shutter.\n- Update the README.\n\n----",
+            "semverPatch": 20,
+            "description": "- DEV9: Update im@s support to PCSX2x6 v0.2.20\n\nUpdate the base version from PCSX2x6 v0.2.11 to v0.2.20.\n\nRemove the obsolete jvsmode=touchscreen override.\n\nPreserve the im@s GPIO cabinet handshake behavior.\n\nMove the GPIO handshake logic into a dedicated ImasJVS module.\n\nMove YACardEmu named-pipe communication into a dedicated ImasCardReader module.\n\nPreserve automatic NM00022 touchscreen detection.\n\nUpdate the README.\n\n----",
             "assets": {
                 "Windows": [
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.11-imas/pcsx2x6-v0.2.11-imas-windows-x64-Qt-symbols.7z",
-                        "displayName": "pcsx2x6-v0.2.11-imas-windows-x64-Qt-symbols.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.20-imas/pcsx2x6-v0.2.20-imas-windows-x64-Qt-symbols.7z",
+                        "displayName": "pcsx2x6-v0.2.20-imas-windows-x64-Qt-symbols.7z",
                         "additionalTags": [
                             "x64",
                             "Qt",
                             "symbols"
                         ],
                         "downloadCount": 0,
-                        "size": 21148632
+                        "size": 21219790
                     },
                     {
-                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.11-imas/pcsx2x6-v0.2.11-imas-windows-x64-Qt.7z",
-                        "displayName": "pcsx2x6-v0.2.11-imas-windows-x64-Qt.7z",
+                        "url": "https://github.com/PeanutNeko/pcsx2x6-imas/releases/download/v0.2.20-imas/pcsx2x6-v0.2.20-imas-windows-x64-Qt.7z",
+                        "displayName": "pcsx2x6-v0.2.20-imas-windows-x64-Qt.7z",
                         "additionalTags": [
                             "x64",
                             "Qt"
                         ],
                         "downloadCount": 0,
-                        "size": 24059092
+                        "size": 24091370
                     }
                 ]
             },
             "type": 2,
             "prerelease": true,
-            "createdAt": "2026-07-20T16:35:42Z",
-            "publishedAt": "2026-07-20T16:53:15Z"
+            "createdAt": "2026-08-04T17:31:01Z",
+            "publishedAt": "2026-08-04T18:46:16Z"
         }
     ],
     "pageInfo": {
